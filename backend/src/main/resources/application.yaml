@@ -1,0 +1,14 @@
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+#          issuer-uri:
+#          jwk-set-uri:
+
+springdoc:
+  swagger-ui:
+    oauth:
+      clientId: mmo-frontend
+#      authorizationUrl:
+#      tokenUrl:

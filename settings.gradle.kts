@@ -1,3 +1,4 @@
 
 rootProject.name = "isometric-mmo"
 include("core")
+include("backend")
