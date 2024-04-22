@@ -1,4 +1,19 @@
 spring:
+  application:
+    name: "MMO game backend"
+
+  datasource:
+#    url:
+#    username:
+#    password:
+    platform: postgres
+    driver-class-name: org.postgresql.Driver
+    hikari.maximum-pool-size: 4
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate.ddl-auto: none
+
   security:
     oauth2:
       resourceserver:

@@ -7,7 +7,7 @@ services:
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-      POSTGRES_DB: keycloak_db
+      POSTGRES_DB: mmo_backend
     ports:
       - "5432:5432"
     restart: unless-stopped

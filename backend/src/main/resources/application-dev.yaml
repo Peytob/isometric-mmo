@@ -1,4 +1,9 @@
 spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/mmo_backend
+    username: postgres
+    password: postgres
+
   security:
     oauth2:
       resourceserver:
@@ -12,6 +17,6 @@ server:
 springdoc:
   swagger-ui:
     oauth:
-      clientId: mmo-frontend
+      clientId: mmo-dev-frontend
       authorizationUrl: http://localhost:8484/realms/mmo-dev/protocol/openid-connect/auth
       tokenUrl: http://localhost:8484/realms/mmo-dev/protocol/openid-connect/token
