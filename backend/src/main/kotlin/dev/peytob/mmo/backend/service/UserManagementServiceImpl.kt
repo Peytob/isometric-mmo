@@ -17,4 +17,6 @@ private class UserManagementServiceImpl(
         log.info("Registration new user with external id {}", externalUserId)
         return userCrudService.createUser(externalUserId)
     }
+
+    override fun findUserData(externalUserId: String): User? = userCrudService.findUserByExternalId(externalUserId)
 }

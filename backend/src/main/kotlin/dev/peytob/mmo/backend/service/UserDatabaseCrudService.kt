@@ -29,9 +29,13 @@ private class UserDatabaseCrudService(
             externalId = externalUserId
         )
 
-
         userRepository.save(userEntity)
 
+        return userMapper.fromHibernateEntityToServiceDto(userEntity)
+    }
+
+    override fun findUserByExternalId(externalUserId: String): User? {
+        val userEntity = userRepository.findByExternalId(externalUserId)
         return userMapper.fromHibernateEntityToServiceDto(userEntity)
     }
 }

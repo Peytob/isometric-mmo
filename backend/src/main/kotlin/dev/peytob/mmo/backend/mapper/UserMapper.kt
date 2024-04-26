@@ -1,5 +1,6 @@
 package dev.peytob.mmo.backend.mapper
 
+import dev.peytob.mmo.backend.controller.dto.UserInfoResponse
 import dev.peytob.mmo.backend.repository.entity.UserEntity
 import dev.peytob.mmo.backend.service.dto.User
 import org.mapstruct.InjectionStrategy
@@ -13,4 +14,6 @@ import org.mapstruct.MappingConstants.ComponentModel
 interface UserMapper {
 
     fun fromHibernateEntityToServiceDto(userEntity: UserEntity): User
+
+    fun fromServiceDtoToControllerDto(user: User): UserInfoResponse
 }

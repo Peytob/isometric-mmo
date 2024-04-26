@@ -1,8 +1,8 @@
-package dev.peytob.mmo.backend.service.dto
+package dev.peytob.mmo.backend.controller.dto
 
 import java.time.Instant
 
-data class User(
+data class UserInfoResponse(
     val id: String,
     val externalId: String,
     val registrationTimestamp: Instant
