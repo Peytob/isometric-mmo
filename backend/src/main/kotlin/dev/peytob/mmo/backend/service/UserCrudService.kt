@@ -7,4 +7,6 @@ interface UserCrudService {
     fun createUser(externalUserId: String): User
 
     fun findUserByExternalId(externalUserId: String): User?
+
+    fun isUserExistsByExternalId(externalUserId: String): Boolean
 }

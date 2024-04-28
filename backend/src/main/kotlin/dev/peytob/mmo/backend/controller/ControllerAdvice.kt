@@ -13,7 +13,7 @@ private val log = LoggerFactory.getLogger(ControllerAdvice::class.java)
 @RestControllerAdvice
 class ControllerAdvice {
 
-    @ExceptionHandler
+    @ExceptionHandler(Exception::class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     fun baseExceptionHandler(exception: Exception): ErrorResponse {
         log.error("Unhandled exception during executing request: {}", exception.message, exception)
@@ -35,7 +35,7 @@ class ControllerAdvice {
 
     private fun errorResponse(message: String?, code: HttpStatus) = ErrorResponse(
         message = message ?: "",
-        code = HttpStatus.CONFLICT,
+        code = code,
         timestamp = Instant.now()
     )
 
