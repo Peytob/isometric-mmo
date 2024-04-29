@@ -13,7 +13,7 @@ import org.mapstruct.MappingConstants.ComponentModel
 )
 interface UserMapper {
 
-    fun fromHibernateEntityToServiceDto(userEntity: UserEntity): User
+    fun fromHibernateEntityToServiceDto(userEntity: UserEntity?): User?
 
-    fun fromServiceDtoToControllerDto(user: User): UserInfoResponse
+    fun fromServiceDtoToControllerDto(user: User?): UserInfoResponse?
 }

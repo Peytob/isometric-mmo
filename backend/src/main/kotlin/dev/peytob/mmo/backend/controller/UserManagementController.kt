@@ -26,7 +26,7 @@ private class UserManagementController(
     fun registerNewUser(authorization: Authentication): UserInfoResponse {
         val externalUserId = extractExternalUserId(authorization)
         val user = userManagementService.registerUser(externalUserId)
-        return userMapper.fromServiceDtoToControllerDto(user)
+        return userMapper.fromServiceDtoToControllerDto(user)!!
     }
 
     @GetMapping("/me")
@@ -36,7 +36,7 @@ private class UserManagementController(
     fun getMe(authorization: Authentication): UserInfoResponse {
         val externalUserId = extractExternalUserId(authorization)
         val user = userManagementService.findUserData(externalUserId) ?: throw ResponseStatusException(NOT_FOUND)
-        return userMapper.fromServiceDtoToControllerDto(user)
+        return userMapper.fromServiceDtoToControllerDto(user)!!
     }
 
     private fun extractExternalUserId(authorization: Authentication) = authorization.name

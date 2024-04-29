@@ -20,6 +20,7 @@ class RegisteredOnlyUsersFilter(
     override fun doFilterInternal(request: HttpServletRequest, response: HttpServletResponse, filterChain: FilterChain) {
         if (request.userPrincipal != null && userCrudService.isUserExistsByExternalId(request.userPrincipal.name)) {
             filterChain.doFilter(request, response)
+            return
         }
 
         response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "User not registered in this service")

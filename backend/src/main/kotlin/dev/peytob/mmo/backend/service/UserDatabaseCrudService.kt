@@ -6,9 +6,13 @@ import dev.peytob.mmo.backend.repository.UserRepository
 import dev.peytob.mmo.backend.repository.entity.UserEntity
 import dev.peytob.mmo.backend.service.dto.User
 import org.slf4j.LoggerFactory
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
+import java.util.*
 
 private val log = LoggerFactory.getLogger(UserDatabaseCrudService::class.java)
 
@@ -33,7 +37,7 @@ private class UserDatabaseCrudService(
 
         userRepository.save(userEntity)
 
-        return userMapper.fromHibernateEntityToServiceDto(userEntity)
+        return userMapper.fromHibernateEntityToServiceDto(userEntity)!!
     }
 
     override fun isUserExistsByExternalId(externalUserId: String): Boolean = userRepository.existsByExternalId(externalUserId)
@@ -41,5 +45,16 @@ private class UserDatabaseCrudService(
     override fun findUserByExternalId(externalUserId: String): User? {
         val userEntity = userRepository.findByExternalId(externalUserId)
         return userMapper.fromHibernateEntityToServiceDto(userEntity)
+    }
+
+    override fun getUsersPage(pageable: Pageable): Page<User> {
+        return userRepository
+            .findAll(pageable)
+            .map(userMapper::fromHibernateEntityToServiceDto)
+    }
+
+    override fun findUserById(userId: UUID): User? {
+        val user = userRepository.findByIdOrNull(userId)
+        return userMapper.fromHibernateEntityToServiceDto(user)
     }
 }
