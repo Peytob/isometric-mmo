@@ -3,7 +3,7 @@ package dev.peytob.mmo.core.resource.repository
 import dev.peytob.mmo.core.resource.Resource
 import dev.peytob.mmo.core.resource.ResourceId
 
-interface Repository<R : Resource> {
+interface ResourceRepository<R : Resource> {
 
     operator fun get(resourceId: ResourceId): R?
 

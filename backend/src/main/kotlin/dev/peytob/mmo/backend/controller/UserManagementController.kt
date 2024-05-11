@@ -14,7 +14,7 @@ import org.springframework.web.server.ResponseStatusException
 
 @RestController
 @RequestMapping("/user")
-private class UserManagementController(
+internal class UserManagementController(
     private val userManagementService: UserManagementService,
     private val userMapper: UserMapper
 ) {
