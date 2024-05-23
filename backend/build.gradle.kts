@@ -19,6 +19,7 @@ repositories {
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
     runtimeOnly("org.jetbrains.kotlin:kotlin-reflect:1.7.10")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.13.+")
 
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-web")

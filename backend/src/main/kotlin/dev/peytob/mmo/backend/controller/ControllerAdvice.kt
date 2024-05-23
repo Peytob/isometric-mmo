@@ -26,7 +26,7 @@ class ControllerAdvice {
     @ExceptionHandler(ResourceAlreadyExistsException::class)
     @ResponseStatus(HttpStatus.CONFLICT)
     fun resourceAlreadyExistsException(exception: ResourceAlreadyExistsException): ErrorResponse {
-        log.error("Conflict during creating new resource: {}", exception.message, exception)
+        log.debug("Conflict during creating new resource: {}", exception.message, exception)
         return errorResponse(
             message = exception.message,
             code = HttpStatus.CONFLICT

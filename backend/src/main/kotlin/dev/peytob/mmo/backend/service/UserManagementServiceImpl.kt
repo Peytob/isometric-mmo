@@ -18,5 +18,6 @@ private class UserManagementServiceImpl(
         return userCrudService.createUser(externalUserId)
     }
 
+    @Transactional(readOnly = true)
     override fun findUserData(externalUserId: String): User? = userCrudService.findUserByExternalId(externalUserId)
 }

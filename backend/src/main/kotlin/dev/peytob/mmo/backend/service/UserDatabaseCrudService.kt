@@ -40,19 +40,24 @@ private class UserDatabaseCrudService(
         return userMapper.fromHibernateEntityToServiceDto(userEntity)!!
     }
 
-    override fun isUserExistsByExternalId(externalUserId: String): Boolean = userRepository.existsByExternalId(externalUserId)
+    @Transactional(readOnly = true)
+    override fun isUserExistsByExternalId(externalUserId: String): Boolean =
+        userRepository.existsByExternalId(externalUserId)
 
+    @Transactional(readOnly = true)
     override fun findUserByExternalId(externalUserId: String): User? {
         val userEntity = userRepository.findByExternalId(externalUserId)
         return userMapper.fromHibernateEntityToServiceDto(userEntity)
     }
 
+    @Transactional(readOnly = true)
     override fun getUsersPage(pageable: Pageable): Page<User> {
         return userRepository
             .findAll(pageable)
             .map(userMapper::fromHibernateEntityToServiceDto)
     }
 
+    @Transactional(readOnly = true)
     override fun findUserById(userId: UUID): User? {
         val user = userRepository.findByIdOrNull(userId)
         return userMapper.fromHibernateEntityToServiceDto(user)

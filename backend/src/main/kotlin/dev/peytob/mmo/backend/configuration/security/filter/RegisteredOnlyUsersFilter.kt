@@ -12,6 +12,7 @@ private val REGISTRATION_ENDPOINT_MATCHER: RequestMatcher = AntPathRequestMatche
 
 /**
  * Blocks all requests from users, that not registered in MMO service. Or just register users by '/register' in kk?...
+ * TODO Change to DecisionVoter implementation
  */
 class RegisteredOnlyUsersFilter(
     private val userCrudService: UserCrudService

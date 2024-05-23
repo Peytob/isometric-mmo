@@ -5,29 +5,31 @@ import dev.peytob.mmo.backend.mapper.UserMapper
 import dev.peytob.mmo.backend.service.UserManagementService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
+import org.springframework.http.HttpStatus
 import org.springframework.security.core.Authentication
-import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.server.ResponseStatusException
 
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/me")
 @Tag(
-    name = "User management",
-    description = "Пользовательское управление своей учетной записью внутри сервиса"
+    name = "Authorized user",
+    description = "Получение данных о текущей авторизации в сервисе"
 )
-class UserManagementController(
+class AuthorizedUserController(
     private val userManagementService: UserManagementService,
     private val userMapper: UserMapper
 ) {
 
-    @PostMapping("/register")
+    @GetMapping
     @Operation(
-        summary = "Регистрация авторизованного в Keycloak пользователя в бекенде ММО"
+        summary = "Получение информации о текущем авторизованном пользователе"
     )
-    fun registerNewUser(authorization: Authentication): UserInfoResponse {
+    fun getMe(authorization: Authentication): UserInfoResponse {
         val externalUserId = authorization.name
-        val user = userManagementService.registerUser(externalUserId)
+        val user = userManagementService.findUserData(externalUserId) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
         return userMapper.fromServiceDtoToControllerDto(user)!!
     }
 }
