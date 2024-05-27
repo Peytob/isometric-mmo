@@ -24,6 +24,9 @@ fun main(args: Array<String>) {
         .bannerMode(Banner.Mode.OFF)
         .run(*args)
 
+    val clientEngine = context.getBean(MmoClientEngine::class.java)
+    clientEngine.run()
+
     destroyStaticCLibraries()
 }
 
@@ -39,7 +42,7 @@ private fun destroyStaticCLibraries() {
     log.info("Static C libraries has been destroyed")
 }
 
-fun initializeGlfw() {
+private fun initializeGlfw() {
     log.info("Initializing GLFW library")
     GLFWErrorCallback.createPrint(System.err).set()
 
@@ -49,7 +52,7 @@ fun initializeGlfw() {
     }
 }
 
-fun destroyGlfw() {
+private fun destroyGlfw() {
     log.info("Destroying GLFW library")
     glfwTerminate()
     glfwSetErrorCallback(null)?.free()

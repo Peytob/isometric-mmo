@@ -46,6 +46,7 @@ dependencies {
     implementation(platform("org.lwjgl:lwjgl-bom:$lwjglVersion"))
 
     implementation("org.springframework.boot:spring-boot-starter")
+    implementation(project(":core"))
 
     implementation("org.lwjgl", "lwjgl")
     implementation("org.lwjgl", "lwjgl-glfw")
