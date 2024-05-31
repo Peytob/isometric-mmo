@@ -53,11 +53,13 @@ abstract class BaseResourceRepository<R : Resource> : ResourceRepository<R> {
             resourceByKey.remove(key, resource)
         }
 
+        @JvmName("containsObject")
         operator fun contains(resource: R): Boolean {
             val key = extractKey(resource)
             return contains(key)
         }
 
+        @JvmName("containsKey")
         operator fun contains(key: K): Boolean {
             return resourceByKey.containsKey(key)
         }
