@@ -1,7 +1,4 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
-    kotlin("kapt")
     kotlin("jvm") version "1.9.20"
     kotlin("plugin.spring") version "1.9.20"
 
@@ -12,40 +9,28 @@ plugins {
 group = "dev.peytob.mmo"
 version = "1.0-SNAPSHOT"
 
+val lwjglVersion = "3.3.3"
+
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-stdlib")
-    runtimeOnly("org.jetbrains.kotlin:kotlin-reflect:1.7.10")
-
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-security")
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
     implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
 
     implementation("io.jsonwebtoken:jjwt:0.12.5")
 
-    implementation("org.postgresql:postgresql:42.5.1")
+    implementation(project(":core"))
 
-    implementation("org.mapstruct:mapstruct:1.5.2.Final")
-    kapt("org.mapstruct:mapstruct-processor:1.5.2.Final")
-
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-api:2.3.0")
-
-    testImplementation(kotlin("test"))
-
+    testImplementation(platform("org.junit:junit-bom:5.9.1"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
 }
 
 tasks.test {
     useJUnitPlatform()
-}
-
-tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "17"
 }
