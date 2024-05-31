@@ -12,6 +12,7 @@ class MmoClientEngine(
     fun run(): ExitCode {
 
         while (isRunning()) {
+            engineCycleManager.performChangeState()
             engineCycleManager.tick()
         }
 
