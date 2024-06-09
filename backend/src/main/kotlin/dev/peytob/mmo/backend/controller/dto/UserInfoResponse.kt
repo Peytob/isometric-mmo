@@ -5,6 +5,6 @@ import java.util.UUID
 
 data class UserInfoResponse(
     val id: UUID,
-    val externalId: String,
+    val username: String,
     val registrationTimestamp: Instant
 )

@@ -4,7 +4,7 @@ import dev.peytob.mmo.backend.repository.entity.UserEntity
 
 interface UserRepository : BaseRepository<UserEntity> {
 
-    fun existsByExternalId(externalId: String): Boolean
+    fun isUserExistsById(userId: String): Boolean
 
-    fun findByExternalId(externalUserId: String): UserEntity
+    fun findUserById(userId: String): UserEntity
 }

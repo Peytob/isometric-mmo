@@ -23,15 +23,15 @@ private class UserDatabaseCrudService(
 ) : UserCrudService {
 
     @Transactional
-    override fun createUser(externalUserId: String): User {
-        log.info("Creating new user with external id {}", externalUserId)
+    override fun createUser(username: String, passwordHash: ByteArray): User {
+        log.info("Creating new user with username {}", username)
 
-        if (isUserExistsByExternalId(externalUserId)) {
-            throw ResourceAlreadyExistsException("User with external id '$externalUserId' already exists")
+        if (isUserExistsByUsername(username)) {
+            throw ResourceAlreadyExistsException("User with username '$username' already exists")
         }
 
         val userEntity = UserEntity(
-            externalId = externalUserId,
+            passwordHash = passwordHash,
             registrationTimestamp = Instant.now()
         )
 
@@ -40,10 +40,10 @@ private class UserDatabaseCrudService(
         return userMapper.fromHibernateEntityToServiceDto(userEntity)!!
     }
 
-    override fun isUserExistsByExternalId(externalUserId: String): Boolean = userRepository.existsByExternalId(externalUserId)
+    override fun isUserExistsByUsername(userId: String): Boolean = userRepository.isUserExistsById(userId)
 
-    override fun findUserByExternalId(externalUserId: String): User? {
-        val userEntity = userRepository.findByExternalId(externalUserId)
+    override fun findUserById(userId: String): User? {
+        val userEntity = userRepository.findUserById(userId)
         return userMapper.fromHibernateEntityToServiceDto(userEntity)
     }
 

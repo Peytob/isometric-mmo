@@ -7,11 +7,11 @@ import java.util.*
 
 interface UserCrudService {
 
-    fun createUser(externalUserId: String): User
+    fun createUser(username: String, passwordHash: ByteArray): User
 
-    fun findUserByExternalId(externalUserId: String): User?
+    fun findUserById(userId: String): User?
 
-    fun isUserExistsByExternalId(externalUserId: String): Boolean
+    fun isUserExistsByUsername(userId: String): Boolean
 
     fun getUsersPage(pageable: Pageable): Page<User>
 

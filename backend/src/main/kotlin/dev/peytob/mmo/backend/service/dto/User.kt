@@ -5,6 +5,6 @@ import java.util.*
 
 data class User(
     val id: UUID,
-    val externalId: String,
+    val username: String,
     val registrationTimestamp: Instant
 )

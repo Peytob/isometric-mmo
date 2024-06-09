@@ -4,7 +4,12 @@ import dev.peytob.mmo.backend.service.dto.User
 
 interface UserManagementService {
 
-    fun registerUser(externalUserId: String): User
+    fun registerUser(userRegistrationData: UserRegistrationData): User
 
-    fun findUserData(externalUserId: String): User?
+    fun findUserData(userId: String): User?
+
+    data class UserRegistrationData(
+        val username: String,
+        val password: String
+    )
 }

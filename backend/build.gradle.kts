@@ -25,9 +25,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 
-    implementation("io.jsonwebtoken:jjwt:0.12.5")
-
-    implementation("org.postgresql:postgresql:42.5.1")
+    implementation("org.bouncycastle:bcprov-jdk15to18:1.77")
 
     implementation("org.mapstruct:mapstruct:1.5.2.Final")
     kapt("org.mapstruct:mapstruct-processor:1.5.2.Final")
