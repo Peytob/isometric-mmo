@@ -1,6 +1,7 @@
 package dev.peytob.mmo.backend.configuration.security
 
 import io.swagger.v3.oas.annotations.OpenAPIDefinition
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType
 import io.swagger.v3.oas.annotations.info.Info
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
@@ -16,7 +17,9 @@ import org.springframework.context.annotation.Configuration
 )
 @SecurityScheme(
     name = "security_auth",
-    type = SecuritySchemeType.DEFAULT
+    type = SecuritySchemeType.APIKEY,
+    `in` = SecuritySchemeIn.HEADER,
+    paramName = "Authorization"
 )
 class SwaggerConfiguration {
 

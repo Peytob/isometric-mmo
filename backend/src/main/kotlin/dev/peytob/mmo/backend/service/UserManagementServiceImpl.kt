@@ -5,6 +5,7 @@ import dev.peytob.mmo.backend.service.dto.User
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.util.UUID
 
 private val log = LoggerFactory.getLogger(UserManagementServiceImpl::class.java)
 
@@ -21,5 +22,13 @@ private class UserManagementServiceImpl(
         return userCrudService.createUser(userRegistrationData.username, passwordHash)
     }
 
-    override fun findUserData(userId: String): User? = userCrudService.findUserById(userId)
+    override fun findUserByUserId(userId: UUID): User? = userCrudService.findUserById(userId)
+
+    override fun findUserByUsername(username: String): User? = userCrudService.findUserByUsername(username)
+
+    override fun findUserByCredentials(username: String, password: String): User? {
+        val user = findUserByUsername(username) ?: return null
+        val isPasswordCorrect = securityOperationsService.checkSecuredHash(password, user.passwordHash)
+        return if (isPasswordCorrect) user else null
+    }
 }

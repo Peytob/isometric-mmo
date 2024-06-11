@@ -1,4 +1,4 @@
-package dev.peytob.mmo.backend.repository.entity
+package dev.peytob.mmo.backend.repository.jpa.entity
 
 import jakarta.persistence.Column
 import jakarta.persistence.GeneratedValue

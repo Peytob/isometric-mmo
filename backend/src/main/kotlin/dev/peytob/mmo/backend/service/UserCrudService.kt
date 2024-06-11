@@ -9,11 +9,11 @@ interface UserCrudService {
 
     fun createUser(username: String, passwordHash: ByteArray): User
 
-    fun findUserById(userId: String): User?
+    fun findUserById(userId: UUID): User?
 
-    fun isUserExistsByUsername(userId: String): Boolean
+    fun isUserExistsByUsername(username: String): Boolean
 
     fun getUsersPage(pageable: Pageable): Page<User>
 
-    fun findUserById(userId: UUID): User?
+    fun findUserByUsername(username: String): User?
 }

@@ -2,8 +2,8 @@ package dev.peytob.mmo.backend.service
 
 import dev.peytob.mmo.backend.exception.ResourceAlreadyExistsException
 import dev.peytob.mmo.backend.mapper.UserMapper
-import dev.peytob.mmo.backend.repository.UserRepository
-import dev.peytob.mmo.backend.repository.entity.UserEntity
+import dev.peytob.mmo.backend.repository.jpa.UserRepository
+import dev.peytob.mmo.backend.repository.jpa.entity.UserEntity
 import dev.peytob.mmo.backend.service.dto.User
 import org.slf4j.LoggerFactory
 import org.springframework.data.domain.Page
@@ -31,6 +31,7 @@ private class UserDatabaseCrudService(
         }
 
         val userEntity = UserEntity(
+            username = username,
             passwordHash = passwordHash,
             registrationTimestamp = Instant.now()
         )
@@ -40,10 +41,11 @@ private class UserDatabaseCrudService(
         return userMapper.fromHibernateEntityToServiceDto(userEntity)!!
     }
 
-    override fun isUserExistsByUsername(userId: String): Boolean = userRepository.isUserExistsById(userId)
+    override fun isUserExistsByUsername(username: String): Boolean = userRepository.existsByUsername(username)
+    override fun findUserByUsername(username: String): User? = userRepository.findByUsername(username)
 
-    override fun findUserById(userId: String): User? {
-        val userEntity = userRepository.findUserById(userId)
+    override fun findUserById(userId: UUID): User? {
+        val userEntity = userRepository.findByIdOrNull(userId)
         return userMapper.fromHibernateEntityToServiceDto(userEntity)
     }
 
@@ -51,10 +53,5 @@ private class UserDatabaseCrudService(
         return userRepository
             .findAll(pageable)
             .map(userMapper::fromHibernateEntityToServiceDto)
-    }
-
-    override fun findUserById(userId: UUID): User? {
-        val user = userRepository.findByIdOrNull(userId)
-        return userMapper.fromHibernateEntityToServiceDto(user)
     }
 }
