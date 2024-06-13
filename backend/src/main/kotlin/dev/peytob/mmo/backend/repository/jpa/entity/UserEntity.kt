@@ -1,4 +1,4 @@
-package dev.peytob.mmo.backend.repository.entity
+package dev.peytob.mmo.backend.repository.jpa.entity
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -10,8 +10,11 @@ import java.time.Instant
 @Table(name = "USERS")
 open class UserEntity(
 
-    @get:Column(name = "EXTERNAL_ID", nullable = false, unique = true)
-    open var externalId: String? = null,
+    @get:Column(name = "USERNAME", nullable = false, unique = true)
+    open var username: String? = null,
+
+    @get:Column(name = "PASSWORD_HASH", nullable = false)
+    open var passwordHash: ByteArray? = null,
 
     @get:Column(name = "REGISTRATION_DATE", nullable = false, updatable = false)
     @get:CreationTimestamp

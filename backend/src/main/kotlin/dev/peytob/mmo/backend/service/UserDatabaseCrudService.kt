@@ -2,8 +2,8 @@ package dev.peytob.mmo.backend.service
 
 import dev.peytob.mmo.backend.exception.ResourceAlreadyExistsException
 import dev.peytob.mmo.backend.mapper.UserMapper
-import dev.peytob.mmo.backend.repository.UserRepository
-import dev.peytob.mmo.backend.repository.entity.UserEntity
+import dev.peytob.mmo.backend.repository.jpa.UserRepository
+import dev.peytob.mmo.backend.repository.jpa.entity.UserEntity
 import dev.peytob.mmo.backend.service.dto.User
 import org.slf4j.LoggerFactory
 import org.springframework.data.domain.Page
@@ -23,15 +23,16 @@ private class UserDatabaseCrudService(
 ) : UserCrudService {
 
     @Transactional
-    override fun createUser(externalUserId: String): User {
-        log.info("Creating new user with external id {}", externalUserId)
+    override fun createUser(username: String, passwordHash: ByteArray): User {
+        log.info("Creating new user with username {}", username)
 
-        if (isUserExistsByExternalId(externalUserId)) {
-            throw ResourceAlreadyExistsException("User with external id '$externalUserId' already exists")
+        if (isUserExistsByUsername(username)) {
+            throw ResourceAlreadyExistsException("User with username '$username' already exists")
         }
 
         val userEntity = UserEntity(
-            externalId = externalUserId,
+            username = username,
+            passwordHash = passwordHash,
             registrationTimestamp = Instant.now()
         )
 
@@ -40,10 +41,11 @@ private class UserDatabaseCrudService(
         return userMapper.fromHibernateEntityToServiceDto(userEntity)!!
     }
 
-    override fun isUserExistsByExternalId(externalUserId: String): Boolean = userRepository.existsByExternalId(externalUserId)
+    override fun isUserExistsByUsername(username: String): Boolean = userRepository.existsByUsername(username)
+    override fun findUserByUsername(username: String): User? = userRepository.findByUsername(username)
 
-    override fun findUserByExternalId(externalUserId: String): User? {
-        val userEntity = userRepository.findByExternalId(externalUserId)
+    override fun findUserById(userId: UUID): User? {
+        val userEntity = userRepository.findByIdOrNull(userId)
         return userMapper.fromHibernateEntityToServiceDto(userEntity)
     }
 
@@ -51,10 +53,5 @@ private class UserDatabaseCrudService(
         return userRepository
             .findAll(pageable)
             .map(userMapper::fromHibernateEntityToServiceDto)
-    }
-
-    override fun findUserById(userId: UUID): User? {
-        val user = userRepository.findByIdOrNull(userId)
-        return userMapper.fromHibernateEntityToServiceDto(user)
     }
 }

@@ -14,13 +14,6 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate.ddl-auto: none
 
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-#          issuer-uri:
-#          jwk-set-uri:
-
 springdoc:
   swagger-ui:
     oauth:
