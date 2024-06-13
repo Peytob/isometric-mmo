@@ -50,9 +50,13 @@ class DefaultUserSessionService(
         val userSession = userSessionInMemoryRepository.getSessionByUserId(user.id)
 
         if (userSession != null) {
-            log.info("Ending user {} session", user.id)
-            userSessionInMemoryRepository.removeUserSession(userSession)
+            endUserActiveSession(userSession)
         }
+    }
+
+    override fun endUserActiveSession(userSession: UserSession) {
+        log.info("Ending user {} session", userSession.userId)
+        userSessionInMemoryRepository.removeUserSession(userSession)
     }
 
     private fun withTokenLazyCheck(tokenExtractFunction: () -> UserSession?): UserSession? {

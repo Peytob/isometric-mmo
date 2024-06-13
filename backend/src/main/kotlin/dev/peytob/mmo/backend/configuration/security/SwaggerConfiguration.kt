@@ -19,7 +19,7 @@ import org.springframework.context.annotation.Configuration
     name = "security_auth",
     type = SecuritySchemeType.APIKEY,
     `in` = SecuritySchemeIn.HEADER,
-    paramName = "Authorization"
+    paramName = AUTHORIZATION_HEADER
 )
 class SwaggerConfiguration {
 

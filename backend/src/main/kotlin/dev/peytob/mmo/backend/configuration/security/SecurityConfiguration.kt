@@ -13,6 +13,8 @@ import org.springframework.security.config.annotation.web.configurers.CorsConfig
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.web.SecurityFilterChain
+import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider
+import org.springframework.security.web.authentication.preauth.RequestHeaderAuthenticationFilter
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher
 
 
@@ -22,12 +24,14 @@ class SecurityConfiguration(
 ) {
 
     @Bean
-    fun mmoBaseFilterChain(http: HttpSecurity): SecurityFilterChain =
+    fun mmoBaseFilterChain(http: HttpSecurity, requestHeaderAuthenticationFilter: RequestHeaderAuthenticationFilter): SecurityFilterChain =
         http
             .cors(CorsConfigurer<HttpSecurity>::disable)
             .csrf(CsrfConfigurer<HttpSecurity>::disable)
+            .addFilter(requestHeaderAuthenticationFilter)
             .authorizeHttpRequests { authorizeHttpRequests ->
                 authorizeHttpRequests
+                    .requestMatchers("/auth/check").authenticated()
                     .requestMatchers("/auth/**").permitAll()
                     .requestMatchers("/admin/**").hasRole(Role.ADMIN.name)
                     .anyRequest().authenticated()
@@ -45,9 +49,32 @@ class SecurityConfiguration(
         }
 
     @Bean
-    fun authenticationManager(tokenAuthenticationProvider: TokenAuthenticationProvider, userDetailsService: UserDetailsService): AuthenticationManager {
-        val providerManager = ProviderManager(tokenAuthenticationProvider)
+    fun authenticationManager(tokenAuthenticationProvider: TokenAuthenticationProvider,
+                              preAuthenticatedAuthenticationProvider: PreAuthenticatedAuthenticationProvider
+    ): AuthenticationManager {
+        val providerManager = ProviderManager(
+            tokenAuthenticationProvider,
+            preAuthenticatedAuthenticationProvider
+        )
         providerManager.isEraseCredentialsAfterAuthentication = false
         return providerManager
+    }
+
+    @Bean
+    fun preAuthenticatedAuthenticationProvider(userDetailsService: UserDetailsService): PreAuthenticatedAuthenticationProvider {
+        val preAuthenticatedAuthenticationProvider = PreAuthenticatedAuthenticationProvider()
+        preAuthenticatedAuthenticationProvider.setPreAuthenticatedUserDetailsService {
+            userDetailsService.loadUserByUsername(it.principal.toString())
+        }
+        return preAuthenticatedAuthenticationProvider
+    }
+
+    @Bean
+    fun requestHeaderAuthenticationFilter(authenticationManager: AuthenticationManager): RequestHeaderAuthenticationFilter {
+        val requestHeaderAuthenticationFilter = RequestHeaderAuthenticationFilter()
+        requestHeaderAuthenticationFilter.setPrincipalRequestHeader(AUTHORIZATION_HEADER)
+        requestHeaderAuthenticationFilter.setAuthenticationManager(authenticationManager)
+        requestHeaderAuthenticationFilter.setExceptionIfHeaderMissing(false)
+        return requestHeaderAuthenticationFilter
     }
 }

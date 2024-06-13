@@ -12,4 +12,6 @@ interface UserSessionService {
     fun startUserSession(user: User): UserSession
 
     fun endUserActiveSession(user: User)
+
+    fun endUserActiveSession(userSession: UserSession)
 }
