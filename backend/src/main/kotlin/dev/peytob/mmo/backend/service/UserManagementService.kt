@@ -1,10 +1,20 @@
 package dev.peytob.mmo.backend.service
 
 import dev.peytob.mmo.backend.service.dto.User
+import java.util.*
 
 interface UserManagementService {
 
-    fun registerUser(externalUserId: String): User
+    fun registerUser(userRegistrationData: UserRegistrationData): User
 
-    fun findUserData(externalUserId: String): User?
+    fun findUserByCredentials(username: String, password: String): User?
+
+    fun findUserByUserId(userId: UUID): User?
+
+    fun findUserByUsername(username: String): User?
+
+    data class UserRegistrationData(
+        val username: String,
+        val password: String
+    )
 }

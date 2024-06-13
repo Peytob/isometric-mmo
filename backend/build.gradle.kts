@@ -25,12 +25,9 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-    implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
-    implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
 
-    implementation("io.jsonwebtoken:jjwt:0.12.5")
-
-    implementation("org.postgresql:postgresql:42.5.1")
+    implementation("org.bouncycastle:bcprov-jdk15to18:1.77")
+    implementation("org.postgresql:postgresql")
 
     implementation("org.mapstruct:mapstruct:1.5.2.Final")
     kapt("org.mapstruct:mapstruct-processor:1.5.2.Final")
@@ -38,8 +35,9 @@ dependencies {
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-api:2.3.0")
 
-    testImplementation(kotlin("test"))
-
+    testImplementation("org.junit.jupiter:junit-jupiter:5.9.1")
+    testImplementation("com.h2database:h2:2.1.210")
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 
 tasks.test {
