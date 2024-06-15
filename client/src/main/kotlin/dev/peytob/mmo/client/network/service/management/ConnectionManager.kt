@@ -2,9 +2,12 @@ package dev.peytob.mmo.client.network.service.management
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import dev.peytob.mmo.client.network.model.ServerConnection
+import dev.peytob.mmo.client.network.model.ServerConnectionDetails
 import dev.peytob.mmo.client.network.service.backend.BackendAuthorizationService
-import dev.peytob.mmo.core.network.model.ConnectionType
+import dev.peytob.mmo.client.network.service.sever.ServerDetailsService
+import dev.peytob.mmo.core.network.BACKEND_AUTHORIZATION_HEADER
 import dev.peytob.mmo.core.network.model.DefaultConnectionTypes
+import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders.CONTENT_TYPE
 import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.http.MediaType.APPLICATION_JSON_VALUE
@@ -13,24 +16,25 @@ import org.springframework.http.codec.json.Jackson2JsonEncoder
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.ExchangeStrategies
 import org.springframework.web.reactive.function.client.WebClient
+import reactor.core.publisher.Mono
 import java.net.URI
 
+private val log = LoggerFactory.getLogger(ConnectionManager::class.java)
 
 @Service
 class ConnectionManager(
     private val backendAuthorizationService: BackendAuthorizationService,
+    private val serverDetailsService: ServerDetailsService,
     objectMapper: ObjectMapper
 ) {
 
-    private var serverConnection: MutableServerConnection? = null
+    private var serverConnection: ServerConnection? = null
 
     private var jsonExchangeStrategies = ExchangeStrategies
         .builder()
         .codecs {
-            it.defaultCodecs()
-                .jackson2JsonEncoder(Jackson2JsonEncoder(objectMapper, APPLICATION_JSON))
-            it.defaultCodecs()
-                .jackson2JsonDecoder(Jackson2JsonDecoder(objectMapper, APPLICATION_JSON))
+            it.defaultCodecs().jackson2JsonEncoder(Jackson2JsonEncoder(objectMapper, APPLICATION_JSON))
+            it.defaultCodecs().jackson2JsonDecoder(Jackson2JsonDecoder(objectMapper, APPLICATION_JSON))
         }.build()
 
     fun getServerConnection(): ServerConnection {
@@ -43,27 +47,75 @@ class ConnectionManager(
 
     fun isConnectedToServer(): Boolean = serverConnection != null
 
-    fun connectToServer(serverBaseUrl: URI, username: String, password: String) {
-        var backendWebClient = WebClient.builder()
-            .exchangeStrategies(jsonExchangeStrategies)
-            .defaultHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-            .baseUrl(serverBaseUrl.toString())
-            .build()
+    fun connectToServer(serverBaseUrl: URI, username: String, password: String): Mono<ServerConnection> {
+        log.info("Starting server {} connecting process as {}", serverBaseUrl, username)
 
-        val token = backendAuthorizationService.login(username, password, backendWebClient)
+        return Mono.just(ServerConnectionBuilder())
+            .doOnNext {
+                log.debug("Creating server {} unauthorized server web client", serverBaseUrl)
 
-//        backendWebClient = backendWebClient.mutate()
-//            .defaultHeader("Authorization", token)
-//            .build()
+                val serverWebClient = WebClient.builder()
+                    .exchangeStrategies(jsonExchangeStrategies)
+                    .defaultHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+                    .baseUrl(serverBaseUrl.toString())
+                    .build()
 
-        serverConnection = MutableServerConnection(
-            connectionType = DefaultConnectionTypes.WEB_SOCKET,
-            backendWebClient = backendWebClient
-        )
+                it.serverWebClient = serverWebClient
+            }.zipWhen {
+                log.debug("Getting server {} details", serverBaseUrl)
+                val serverDetails = serverDetailsService.getServerDetails(it.serverWebClient!!)
+                serverDetails
+            }.map {
+                val serverConnectionBuilder = it.t1
+                val serverDetails = it.t2
+
+                log.debug("Updating server {} connection. Server backend URL: {}, server URL: {}", serverBaseUrl, serverDetails.backendUrl, serverDetails.serverUrl)
+
+                serverConnectionBuilder.backendWebClient = WebClient.builder()
+                    .exchangeStrategies(jsonExchangeStrategies)
+                    .defaultHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+                    .baseUrl(serverDetails.serverUrl.toString())
+                    .build()
+
+                serverConnectionBuilder.serverWebClient = serverConnectionBuilder.serverWebClient!!.mutate()
+                    .defaultHeader(serverDetails.serverUrl.toString())
+                    .build()
+
+                serverConnectionBuilder.serverConnectionDetails = ServerConnectionDetails(
+                    serverDetails.serverUrl,
+                    serverDetails.backendUrl
+                )
+
+                serverConnectionBuilder
+            }.zipWhen {
+                log.info("Performing login in backend {} as {}", it.backendWebClient, username)
+                backendAuthorizationService.login(username, password, it.backendWebClient!!)
+            }.map {
+                val serverConnectionBuilder = it.t1
+                val backendLoginResult = it.t2
+
+                log.debug("Updating all server {} connection data. Welcome to server, sir!", serverConnectionBuilder.serverConnectionDetails?.serverUrl!!)
+
+                serverConnectionBuilder.serverWebClient = serverConnectionBuilder.serverWebClient!!.mutate()
+                    .defaultHeader(BACKEND_AUTHORIZATION_HEADER, backendLoginResult.token)
+                    .build()
+
+                serverConnectionBuilder.backendWebClient = serverConnectionBuilder.backendWebClient!!.mutate()
+                    .defaultHeader(BACKEND_AUTHORIZATION_HEADER, backendLoginResult.token)
+                    .build()
+
+                ServerConnection(
+                    serverConnectionBuilder.backendWebClient!!,
+                    serverConnectionBuilder.serverWebClient!!,
+                    DefaultConnectionTypes.WEB_SOCKET,
+                    serverConnectionBuilder.serverConnectionDetails!!
+                )
+            }
     }
 
-    private data class MutableServerConnection(
-        override var backendWebClient: WebClient,
-        override var connectionType: ConnectionType
-    ) : ServerConnection
+    private data class ServerConnectionBuilder(
+        var backendWebClient: WebClient? = null,
+        var serverWebClient: WebClient? = null,
+        var serverConnectionDetails: ServerConnectionDetails? = null
+    )
 }
