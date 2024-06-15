@@ -46,7 +46,10 @@ dependencies {
     implementation(platform("org.lwjgl:lwjgl-bom:$lwjglVersion"))
 
     implementation("org.springframework.boot:spring-boot-starter")
+    implementation("org.springframework:spring-webflux")
     implementation(project(":core"))
+
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.13.+")
 
     implementation("org.lwjgl", "lwjgl")
     implementation("org.lwjgl", "lwjgl-glfw")

@@ -1,5 +1,6 @@
 package dev.peytob.mmo.client
 
+import dev.peytob.mmo.client.network.service.management.ConnectionManager
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.glfw.GLFWErrorCallback
 import org.slf4j.LoggerFactory
@@ -8,6 +9,7 @@ import org.springframework.boot.WebApplicationType
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.builder.SpringApplicationBuilder
 import org.springframework.context.ConfigurableApplicationContext
+import java.net.URI
 
 @SpringBootApplication
 class MmoClientMain
@@ -25,6 +27,10 @@ fun main(args: Array<String>) {
         .run(*args)
 
     val clientEngine = context.getBean(MmoClientEngine::class.java)
+
+    val connectionManager = context.getBean(ConnectionManager::class.java)
+    connectionManager.connectToServer(URI.create("http://localhost:8081/"), "", "")
+
     clientEngine.run()
 
     destroyStaticCLibraries()
