@@ -74,7 +74,7 @@ class ConnectionManager(
                 serverConnectionBuilder.backendWebClient = WebClient.builder()
                     .exchangeStrategies(jsonExchangeStrategies)
                     .defaultHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-                    .baseUrl(serverDetails.serverUrl.toString())
+                    .baseUrl(serverDetails.backendUrl.toString())
                     .build()
 
                 serverConnectionBuilder.serverWebClient = serverConnectionBuilder.serverWebClient!!.mutate()
@@ -88,7 +88,7 @@ class ConnectionManager(
 
                 serverConnectionBuilder
             }.zipWhen {
-                log.info("Performing login in backend {} as {}", it.backendWebClient, username)
+                log.info("Performing backend login as {}", username)
                 backendAuthorizationService.login(username, password, it.backendWebClient!!)
             }.map {
                 val serverConnectionBuilder = it.t1

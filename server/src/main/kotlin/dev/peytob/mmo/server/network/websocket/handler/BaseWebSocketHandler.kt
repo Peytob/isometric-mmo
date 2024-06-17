@@ -1,4 +1,4 @@
-package dev.peytob.mmo.server.network.handler
+package dev.peytob.mmo.server.network.websocket.handler
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.beans.factory.annotation.Autowired

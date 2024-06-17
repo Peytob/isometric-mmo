@@ -29,7 +29,7 @@ fun main(args: Array<String>) {
     val clientEngine = context.getBean(MmoClientEngine::class.java)
 
     val connectionManager = context.getBean(ConnectionManager::class.java)
-    connectionManager.connectToServer(URI.create("http://localhost:8081/"), "", "")
+    connectionManager.connectToServer(URI.create("http://localhost:8082/"), "string", "string").block()
 
     clientEngine.run()
 

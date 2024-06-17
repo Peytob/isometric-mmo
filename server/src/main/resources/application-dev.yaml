@@ -8,3 +8,8 @@ spring:
 
 server:
   port: 8082
+
+connection:
+  details:
+    self-url: http://localhost:8082/
+    backend-url: http://localhost:8081/

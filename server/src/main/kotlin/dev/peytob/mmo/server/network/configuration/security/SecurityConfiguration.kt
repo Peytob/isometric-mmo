@@ -7,7 +7,6 @@ import org.springframework.security.config.annotation.web.builders.WebSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer
 import org.springframework.security.config.annotation.web.configurers.CorsConfigurer
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer
-import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher
 
@@ -15,19 +14,15 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMa
 class SecurityConfiguration {
 
     @Bean
-    fun mmoBaseFilterChain(http: HttpSecurity, jwtConverter: JwtConverter): SecurityFilterChain =
+    fun mmoBaseFilterChain(http: HttpSecurity): SecurityFilterChain =
         http
             .cors(CorsConfigurer<HttpSecurity>::disable)
             .csrf(CsrfConfigurer<HttpSecurity>::disable)
             .authorizeHttpRequests { authorizeHttpRequests ->
                 authorizeHttpRequests
+                    .requestMatchers("/details").permitAll()
                     .requestMatchers("/actuator/**").permitAll()
                     .anyRequest().authenticated()
-            }
-            .oauth2ResourceServer { oauth2 ->
-                oauth2.jwt { jwt ->
-                    jwt.jwtAuthenticationConverter(jwtConverter)
-                }
             }
             .build()
 
@@ -40,7 +35,4 @@ class SecurityConfiguration {
                 antMatcher("/swagger-ui/**")
             )
         }
-
-    @Bean
-    fun jwtGrantedAuthoritiesConverter(): JwtGrantedAuthoritiesConverter = JwtGrantedAuthoritiesConverter()
 }

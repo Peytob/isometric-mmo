@@ -8,3 +8,8 @@ spring:
         jwt:
 #          issuer-uri:
 #          jwk-set-uri:
+
+server:
+  details:
+#    self-url: http://server-root-url.lan/
+#    backend-url: http://backend-root-url.lan/

@@ -1,6 +1,6 @@
 package dev.peytob.mmo.server.network.configuration
 
-import dev.peytob.mmo.server.network.handler.BaseWebSocketHandler
+import dev.peytob.mmo.server.network.websocket.handler.BaseWebSocketHandler
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.socket.config.annotation.EnableWebSocket

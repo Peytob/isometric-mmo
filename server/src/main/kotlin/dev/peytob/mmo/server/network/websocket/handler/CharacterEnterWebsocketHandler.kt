@@ -1,4 +1,4 @@
-package dev.peytob.mmo.server.network.handler
+package dev.peytob.mmo.server.network.websocket.handler
 
 import dev.peytob.mmo.core.network.interfaces.CharacterEnterCommand
 import org.springframework.stereotype.Component
