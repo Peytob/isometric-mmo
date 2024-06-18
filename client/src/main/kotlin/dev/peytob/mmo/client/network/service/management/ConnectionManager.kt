@@ -52,7 +52,7 @@ class ConnectionManager(
 
         return Mono.just(ServerConnectionBuilder())
             .doOnNext {
-                log.debug("Creating server {} unauthorized server web client", serverBaseUrl)
+                log.debug("Creating server {} unauthorized web client", serverBaseUrl)
 
                 val serverWebClient = WebClient.builder()
                     .exchangeStrategies(jsonExchangeStrategies)
