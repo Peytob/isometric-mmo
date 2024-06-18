@@ -18,7 +18,6 @@ repositories {
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
-
     implementation("com.google.guava:guava:33.1.0-jre")
 
     testImplementation(kotlin("test"))

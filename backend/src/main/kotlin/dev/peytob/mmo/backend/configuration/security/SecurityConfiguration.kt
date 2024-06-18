@@ -34,6 +34,7 @@ class SecurityConfiguration(
                     .requestMatchers("/auth/check").authenticated()
                     .requestMatchers("/auth/**").permitAll()
                     .requestMatchers("/admin/**").hasRole(Role.ADMIN.name)
+                    .requestMatchers("/actuator/**").permitAll()
                     .anyRequest().authenticated()
             }
             .build()

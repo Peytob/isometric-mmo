@@ -1,0 +1,15 @@
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8484/realms/mmo-dev
+          jwk-set-uri: http://localhost:8484/realms/mmo-dev/protocol/openid-connect/certs
+
+server:
+  port: 8082
+
+connection:
+  details:
+    self-url: http://localhost:8082/
+    backend-url: http://localhost:8081/
