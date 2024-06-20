@@ -13,3 +13,4 @@ server:
   details:
 #    self-url: http://server-root-url.lan/
 #    backend-url: http://backend-root-url.lan/
+#    backend-token: backend-token-string

@@ -1,4 +1,4 @@
-package dev.peytob.mmo.core.resource.service
+package dev.peytob.mmo.core.resource.service.loading
 
 import dev.peytob.mmo.core.resource.Resource
 import dev.peytob.mmo.core.resource.repository.ResourceRepository
