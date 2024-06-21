@@ -1,6 +1,6 @@
-package dev.peytob.mmo.server.core.service
+package dev.peytob.mmo.server.network.service
 
-import dev.peytob.mmo.server.core.model.ServerConnectionDetails
+import dev.peytob.mmo.server.network.model.ServerConnectionDetails
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.stereotype.Service
@@ -17,6 +17,7 @@ class RemoteServerDetailsService(
     @ConfigurationProperties(prefix = "connection.details")
     data class ServerConnectionDetailsProperties (
         override val selfUrl: URI,
-        override val backendUrl: URI
+        override val backendUrl: URI,
+        override val backendToken: String
     ) : ServerConnectionDetails
 }

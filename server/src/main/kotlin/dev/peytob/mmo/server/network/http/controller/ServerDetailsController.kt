@@ -1,6 +1,6 @@
 package dev.peytob.mmo.server.network.http.controller
 
-import dev.peytob.mmo.server.core.service.ServerDetailsService
+import dev.peytob.mmo.server.network.service.ServerDetailsService
 import dev.peytob.mmo.server.network.http.dto.ServerDetailsHttpResponse
 import dev.peytob.mmo.server.network.http.mapper.DetailsHttpMapper
 import org.springframework.web.bind.annotation.GetMapping

@@ -1,6 +1,6 @@
 package dev.peytob.mmo.server.network.http.mapper
 
-import dev.peytob.mmo.server.core.model.ServerConnectionDetails
+import dev.peytob.mmo.server.network.model.ServerConnectionDetails
 import dev.peytob.mmo.server.network.http.dto.ServerDetailsHttpResponse
 import org.mapstruct.InjectionStrategy
 import org.mapstruct.Mapper
