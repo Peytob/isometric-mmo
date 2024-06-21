@@ -96,8 +96,6 @@ class ConnectionManager(
 
                 log.debug("Updating all server {} connection data. Welcome to server, sir!", serverConnectionBuilder.serverConnectionDetails?.serverUrl!!)
 
-                log.info(backendLoginResult.token)
-
                 serverConnectionBuilder.serverWebClient = serverConnectionBuilder.serverWebClient!!.mutate()
                     .defaultHeader(BACKEND_AUTHORIZATION_HEADER, backendLoginResult.token)
                     .build()
