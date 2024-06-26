@@ -7,11 +7,12 @@ import dev.peytob.mmo.server.core.resource.WorldResource
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
-private val log = LoggerFactory.getLogger(ExecutingWorldService::class.java)
+private val log = LoggerFactory.getLogger(ExecutingWorldManager::class.java)
 
 @Service
-class ExecutingWorldService(
+class ExecutingWorldManager(
     private val executingWorldResourceRepository: ExecutingWorldResourceRepository,
+    private val executingWorldExecutionService: ExecutingWorldExecutionService,
     private val resourceIdGenerator: ResourceIdGenerator
 ) {
 
@@ -22,10 +23,12 @@ class ExecutingWorldService(
 
         val executingWorld = ExecutingWorldResource(
             id = executingWorldId,
-            world = world
+            world = world,
+            state = ExecutingWorldResource.ExecutingWorldState.EXECUTING
         )
 
         executingWorldResourceRepository.append(executingWorld)
+        executingWorldExecutionService.startExecutionWorldExecuting(executingWorld)
 
         return executingWorld
     }

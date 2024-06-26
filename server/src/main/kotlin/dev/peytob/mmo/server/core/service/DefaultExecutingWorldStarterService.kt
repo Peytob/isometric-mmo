@@ -4,13 +4,13 @@ import dev.peytob.mmo.server.core.repository.WorldResourceRepository
 import org.springframework.stereotype.Service
 
 @Service
-class MockExecutingWorldStarterService(
+class DefaultExecutingWorldStarterService(
     private val worldResourceRepository: WorldResourceRepository,
-    private val executingWorldService: ExecutingWorldService
+    private val executingWorldManager: ExecutingWorldManager
 ) {
 
-    fun startMockWorlds() {
+    fun startDefaultWorlds() {
         val world = worldResourceRepository["mock_world"]!!
-        executingWorldService.startExecutingWorld(world)
+        executingWorldManager.startExecutingWorld(world)
     }
 }

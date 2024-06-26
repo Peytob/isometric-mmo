@@ -8,5 +8,27 @@ class ExecutingWorldResource(
     override val id: ResourceId,
 
     @DependsOnResource
-    val world: WorldResource
-) : Resource
+    val world: WorldResource,
+
+    val state: ExecutingWorldState,
+
+//    val ecsContext: EcsContext
+) : Resource {
+
+    enum class ExecutingWorldState(
+        val isTerminated: Boolean
+    ) {
+        PENDING(
+            isTerminated = false
+        ),
+        EXECUTING(
+            isTerminated = false
+        ),
+        EXIT_SUCCESS(
+            isTerminated = true
+        ),
+        EXIT_FAIL(
+            isTerminated = true
+        )
+    }
+}
