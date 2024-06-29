@@ -39,6 +39,12 @@ abstract class BaseResourceRepository<R : Resource> : ResourceRepository<R> {
         return true
     }
 
+    protected fun appendIndex(index: RepositoryIndex<*, R>) {
+        if (!repositoryIndices.contains(index)) {
+            repositoryIndices.add(index)
+        }
+    }
+
     protected abstract class RepositoryIndex<K, R> {
 
         private val resourceByKey: Multimap<K, R> = HashMultimap.create()
@@ -51,12 +57,6 @@ abstract class BaseResourceRepository<R : Resource> : ResourceRepository<R> {
         fun remove(resource: R) {
             val key = extractKey(resource)
             resourceByKey.remove(key, resource)
-        }
-
-        @JvmName("containsObject")
-        operator fun contains(resource: R): Boolean {
-            val key = extractKey(resource)
-            return contains(key)
         }
 
         @JvmName("containsKey")

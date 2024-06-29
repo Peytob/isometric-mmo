@@ -6,11 +6,11 @@ import org.springframework.stereotype.Service
 @Service
 class DefaultExecutingWorldStarterService(
     private val worldResourceRepository: WorldResourceRepository,
-    private val executingWorldManager: ExecutingWorldManager
+    private val runningWorldService: RunningWorldService
 ) {
 
     fun startDefaultWorlds() {
         val world = worldResourceRepository["mock_world"]!!
-        executingWorldManager.startExecutingWorld(world)
+        runningWorldService.startExecutingWorld(world)
     }
 }
