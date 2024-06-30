@@ -7,6 +7,7 @@ import dev.peytob.mmo.server.core.resource.RunningWorldResource
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.atomic.AtomicBoolean
 
 private val log = LoggerFactory.getLogger(WorldExecutingService::class.java)
 
@@ -22,11 +23,13 @@ class WorldExecutingService(
             throw ResourceConflictException("Running world {} already has executing process")
         }
 
+        val stopExecutingFlag = AtomicBoolean(false)
+
         val executingWorld = ExecutingWorldResource(
             id = runningWorld.id,
             runningWorld = runningWorld,
-            // TODO World execution entrypoint
-            executingFuture = CompletableFuture.runAsync { }
+            stopExecutingFlag = stopExecutingFlag,
+            executingFuture = CompletableFuture.runAsync(WorldExecutionCycle(runningWorld, stopExecutingFlag))
         )
 
         executingWorldResourceRepository.append(executingWorld)
@@ -38,7 +41,7 @@ class WorldExecutingService(
         val executingWorld = (executingWorldResourceRepository.getByRunningWorld(runningWorld)
             ?: throw ResourceConflictException("Running world {} already has executing process"))
 
-        executingWorld.stopExecutingFlag = true
+        executingWorld.stopExecutingFlag.set(true)
         executingWorld.executingFuture.get()
 
         executingWorldResourceRepository.remove(executingWorld)

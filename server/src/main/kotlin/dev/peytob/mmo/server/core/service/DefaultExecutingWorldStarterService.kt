@@ -11,6 +11,6 @@ class DefaultExecutingWorldStarterService(
 
     fun startDefaultWorlds() {
         val world = worldResourceRepository["mock_world"]!!
-        runningWorldService.startExecutingWorld(world)
+        runningWorldService.startRunningWorld(world)
     }
 }
