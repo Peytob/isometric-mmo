@@ -1,7 +1,7 @@
-package dev.peytob.mmo.server.resource.repository
+package dev.peytob.mmo.server.core.repository
 
 import dev.peytob.mmo.core.resource.repository.BaseResourceRepository
-import dev.peytob.mmo.server.resource.instance.WorldResource
+import dev.peytob.mmo.server.core.resource.WorldResource
 import org.springframework.stereotype.Component
 
 @Component

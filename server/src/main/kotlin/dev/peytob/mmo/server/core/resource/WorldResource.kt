@@ -1,4 +1,4 @@
-package dev.peytob.mmo.server.resource.instance
+package dev.peytob.mmo.server.core.resource
 
 import dev.peytob.mmo.core.resource.Resource
 import dev.peytob.mmo.core.resource.ResourceId

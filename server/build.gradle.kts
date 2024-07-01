@@ -13,11 +13,14 @@ version = "1.0-SNAPSHOT"
 val lwjglVersion = "3.3.3"
 
 repositories {
+    mavenLocal()
     mavenCentral()
 }
 
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.9.20")
+
+    implementation("dev.peytob.ecs:kotlin-ecs:1.0")
 
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-web")
