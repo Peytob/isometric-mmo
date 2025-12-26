@@ -1,30 +1,34 @@
 package fsm
 
 import (
+	"context"
 	"errors"
 	"maps"
-	"slices"
+	"peytob/isometricmmo/game/public/utils"
 )
 
 type MachineBuilder[E comparable] interface {
-	// RegisterState Add State and all transitions to this Machine. If state already exists in
+	// RegisterState add State and all transitions to this Machine. If state already exists in
 	// machine, then transitions will be merged.
 	RegisterState(state State, transitions Transitions[E]) MachineBuilder[E]
 
-	// WriteState Registers state if state not exists. Rewrites transitions if state already exists.
+	// RegisterStateFunc alias for RegisterState that uses functions instead of state struct
+	RegisterStateFunc(f func(ctx context.Context) error, identifier StateIdentifier, transitions Transitions[E]) MachineBuilder[E]
+
+	// WriteState registers state if state not exists. Rewrites transitions if state already exists.
 	WriteState(state State, transitions Transitions[E]) MachineBuilder[E]
 
-	// InitialState State that be used as initial on Machine. If initial state already exists it will be rewritten.
-	InitialState(state State) MachineBuilder[E]
+	// InitialState state that be used as initial on Machine. If initial state already exists it will be rewritten.
+	InitialState(state StateIdentifier) MachineBuilder[E]
 
 	// GlobalTransitions Add new global transactions to Machine. If global transitions already specified, then
-	// new transitions will rewrire .
+	// new transitions will be rewritten
 	GlobalTransitions(transitions Transitions[E]) MachineBuilder[E]
 
-	// FinalStates States that be used as final on Machine. If not set, then machine will work indefinitely.
-	FinalStates(states []State) MachineBuilder[E]
+	// FinalStates states that be used as final on Machine. If not set, then machine will work indefinitely.
+	FinalStates(states []StateIdentifier) MachineBuilder[E]
 
-	// Build Returns built machine. Possible error causes is:
+	// Build returns built machine. Possible error causes is:
 	// State used in transition but not registered
 	// If initial state not set
 	// No one state is registered
@@ -32,25 +36,23 @@ type MachineBuilder[E comparable] interface {
 }
 
 type machineBuilder[E comparable] struct {
-	transitions       map[StateIdentifier]Transitions[E]
-	globalTransitions Transitions[E]
-	states            map[StateIdentifier]State
-	finalStates       []StateIdentifier
-	initialState      State
+	transitions             map[StateIdentifier]Transitions[E]
+	globalTransitions       Transitions[E]
+	states                  map[StateIdentifier]State
+	finalStates             utils.Set[StateIdentifier]
+	initialState            StateIdentifier
+	initialStateInitialized bool
 }
 
-// NewBuilder Creates new builder with given initial state. State will be automatically registered without any
-// transitions.
-func NewBuilder[E comparable](initialState State) MachineBuilder[E] {
+// NewBuilder Creates new builder
+func NewBuilder[E comparable]() MachineBuilder[E] {
 	m := &machineBuilder[E]{
-		transitions:       make(map[StateIdentifier]Transitions[E]),
-		globalTransitions: make(Transitions[E]),
-		states:            make(map[StateIdentifier]State),
-		finalStates:       make([]StateIdentifier, 0, 16),
-		initialState:      initialState,
+		transitions:             make(map[StateIdentifier]Transitions[E]),
+		globalTransitions:       make(Transitions[E]),
+		states:                  make(map[StateIdentifier]State),
+		finalStates:             utils.NewSet[StateIdentifier](16),
+		initialStateInitialized: false,
 	}
-
-	m.RegisterState(initialState, make(Transitions[E]))
 
 	return m
 }
@@ -65,14 +67,22 @@ func (m *machineBuilder[E]) RegisterState(state State, transitions Transitions[E
 	return m
 }
 
+func (m *machineBuilder[E]) RegisterStateFunc(f func(ctx context.Context) error, identifier StateIdentifier, transitions Transitions[E]) MachineBuilder[E] {
+	return m.RegisterState(&funcState{
+		identifier: identifier,
+		update:     f,
+	}, transitions)
+}
+
 func (m *machineBuilder[E]) WriteState(state State, transitions Transitions[E]) MachineBuilder[E] {
 	m.transitions[state.Identifier()] = transitions
 	m.states[state.Identifier()] = state
 	return m
 }
 
-func (m *machineBuilder[E]) InitialState(state State) MachineBuilder[E] {
+func (m *machineBuilder[E]) InitialState(state StateIdentifier) MachineBuilder[E] {
 	m.initialState = state
+	m.initialStateInitialized = true
 	return m
 }
 
@@ -81,10 +91,10 @@ func (m *machineBuilder[E]) GlobalTransitions(transitions Transitions[E]) Machin
 	return m
 }
 
-func (m *machineBuilder[E]) FinalStates(states []State) MachineBuilder[E] {
+func (m *machineBuilder[E]) FinalStates(states []StateIdentifier) MachineBuilder[E] {
 	for _, state := range states {
-		if !slices.Contains(m.finalStates, state.Identifier()) {
-			m.finalStates = append(m.finalStates)
+		if !m.finalStates.Contains(state) {
+			m.finalStates.Add(state)
 		}
 	}
 
@@ -114,10 +124,18 @@ func (m *machineBuilder[E]) Build() (Machine[E], error) {
 		}
 	}
 
-	for _, finalState := range m.finalStates {
+	for finalState := range m.finalStates {
 		if !m.containsState(finalState) {
 			return nil, errors.New(string("final finalState not found: " + finalState))
 		}
+	}
+
+	if !m.initialStateInitialized {
+		return nil, errors.New("initial state not initialized")
+	}
+
+	if !m.containsState(m.initialState) {
+		return nil, errors.New("initial state not registered")
 	}
 
 	return newMachine(m)
