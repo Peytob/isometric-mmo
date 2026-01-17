@@ -3,7 +3,8 @@ package fsm
 import (
 	"fmt"
 	"maps"
-	"peytob/isometricmmo/game/public/utils"
+
+	mapset "github.com/deckarep/golang-set/v2"
 )
 
 type MachineError string
@@ -49,7 +50,7 @@ type machine[E comparable, I comparable, S State[I]] struct {
 	globalTransitions Transitions[E, I]
 
 	states       map[I]S
-	finalStates  utils.Set[I]
+	finalStates  mapset.Set[I]
 	currentState S
 	isRunning    bool
 }
@@ -66,7 +67,7 @@ func newMachine[E comparable, I comparable, S State[I]](builder *machineBuilder[
 		globalTransitions: maps.Clone(builder.globalTransitions),
 
 		states:       builder.states,
-		finalStates:  maps.Clone(builder.finalStates),
+		finalStates:  builder.finalStates.Clone(),
 		currentState: initialState,
 		isRunning:    true,
 	}, nil

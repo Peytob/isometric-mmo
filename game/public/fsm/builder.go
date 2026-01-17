@@ -3,7 +3,8 @@ package fsm
 import (
 	"errors"
 	"maps"
-	"peytob/isometricmmo/game/public/utils"
+
+	mapset "github.com/deckarep/golang-set/v2"
 )
 
 type MachineBuilder[E comparable, I comparable, S State[I]] interface {
@@ -35,7 +36,7 @@ type machineBuilder[E comparable, I comparable, S State[I]] struct {
 	transitions             map[I]Transitions[E, I]
 	globalTransitions       Transitions[E, I]
 	states                  map[I]S
-	finalStates             utils.Set[I]
+	finalStates             mapset.Set[I]
 	initialState            I
 	initialStateInitialized bool
 }
@@ -46,7 +47,7 @@ func NewBuilder[E comparable, I comparable, S State[I]]() MachineBuilder[E, I, S
 		transitions:             make(map[I]Transitions[E, I]),
 		globalTransitions:       make(Transitions[E, I]),
 		states:                  make(map[I]S),
-		finalStates:             utils.NewSet[I](4),
+		finalStates:             mapset.NewThreadUnsafeSet[I](),
 		initialStateInitialized: false,
 	}
 
@@ -113,7 +114,7 @@ func (m *machineBuilder[E, I, S]) Build() (Machine[E, I, S], error) {
 		}
 	}
 
-	for finalState := range m.finalStates {
+	for finalState := range m.finalStates.Iter() {
 		if !m.containsState(finalState) {
 			return nil, errors.New("final finalState not found")
 		}
