@@ -1,16 +1,21 @@
 package fsm
 
 import (
-	"context"
 	"testing"
 )
 
+type TestState string
+
+func (s TestState) Identifier() string {
+	return string(s)
+}
+
 const (
-	initialStateIdentifier = StateIdentifier("initializing")
-	runningStateIdentifier = StateIdentifier("running")
-	loadingStateIdentifier = StateIdentifier("loading")
-	exitedStateIdentifier  = StateIdentifier("exited")
-	failedStateIdentifier  = StateIdentifier("failed")
+	initialState = TestState("initializing")
+	runningState = TestState("running")
+	loadingState = TestState("loading")
+	exitedState  = TestState("exited")
+	failedState  = TestState("failed")
 
 	initializedEvent  = "initialized"
 	failedEvent       = "failed"
@@ -19,40 +24,26 @@ const (
 	exitedEvent       = "exited"
 )
 
-type initialState struct{}
-
-func (s initialState) Update(_ context.Context) error {
-	return nil
-}
-
-func (s initialState) Identifier() StateIdentifier {
-	return initialStateIdentifier
-}
-
-func nothing(_ context.Context) error {
-	return nil
-}
-
-func createTestMachine() Machine[string] {
-	m, _ := NewBuilder[string]().
-		RegisterState(initialState{}, Transitions[string]{
-			initializedEvent: runningStateIdentifier,
+func createTestMachine() Machine[string, string, TestState] {
+	m, _ := NewBuilder[string, string, TestState]().
+		RegisterState(initialState, Transitions[string, string]{
+			initializedEvent: runningState.Identifier(),
 		}).
-		RegisterStateFunc(nothing, runningStateIdentifier, Transitions[string]{
-			exitedEvent:       exitedStateIdentifier,
-			levelChangedEvent: loadingStateIdentifier,
+		RegisterState(runningState, Transitions[string, string]{
+			exitedEvent:       exitedState.Identifier(),
+			levelChangedEvent: loadingState.Identifier(),
 		}).
-		RegisterStateFunc(nothing, loadingStateIdentifier, Transitions[string]{
-			loadedEvent: runningStateIdentifier,
-			failedEvent: initialStateIdentifier, // will be reset just for event priority testing
+		RegisterState(loadingState, Transitions[string, string]{
+			loadedEvent: runningState.Identifier(),
+			failedEvent: initialState.Identifier(), // will be reset just for event priority testing
 		}).
-		RegisterStateFunc(nothing, failedStateIdentifier, Transitions[string]{}).
-		RegisterStateFunc(nothing, exitedStateIdentifier, Transitions[string]{}).
-		GlobalTransitions(Transitions[string]{
-			failedEvent: failedStateIdentifier,
+		RegisterState(failedState, Transitions[string, string]{}).
+		RegisterState(exitedState, Transitions[string, string]{}).
+		GlobalTransitions(Transitions[string, string]{
+			failedEvent: failedState.Identifier(),
 		}).
-		InitialState(initialStateIdentifier).
-		FinalStates([]StateIdentifier{failedStateIdentifier, exitedStateIdentifier}).
+		InitialState(initialState.Identifier()).
+		FinalStates([]string{failedState.Identifier(), exitedState.Identifier()}).
 		Build()
 
 	return m
@@ -66,7 +57,7 @@ func TestEventChanges(t *testing.T) {
 			t.Error(err)
 		}
 
-		if m.State().Identifier() != runningStateIdentifier {
+		if m.State().Identifier() != runningState.Identifier() {
 			t.Errorf("wrong state after initialized event: %s", m.State().Identifier())
 		}
 	})
@@ -78,7 +69,7 @@ func TestEventChanges(t *testing.T) {
 			t.Error(err)
 		}
 
-		if m.State().Identifier() != failedStateIdentifier {
+		if m.State().Identifier() != failedState.Identifier() {
 			t.Errorf("wrong state after failed event: %s", m.State().Identifier())
 		}
 	})
@@ -99,7 +90,7 @@ func TestEventChanges(t *testing.T) {
 			t.Error(err)
 		}
 
-		if m.State().Identifier() != initialStateIdentifier {
+		if m.State().Identifier() != initialState.Identifier() {
 			t.Errorf("wrong state after failed event: %s", m.State().Identifier())
 		}
 	})
@@ -131,7 +122,7 @@ func TestFinalStates(t *testing.T) {
 			t.Error("result flag is not ok in final state")
 		}
 
-		if state.Identifier() != failedStateIdentifier {
+		if state.Identifier() != failedState.Identifier() {
 			t.Error("wrong state in machine result")
 		}
 	})

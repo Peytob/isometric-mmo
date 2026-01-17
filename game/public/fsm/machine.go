@@ -1,7 +1,6 @@
 package fsm
 
 import (
-	"context"
 	"fmt"
 	"maps"
 	"peytob/isometricmmo/game/public/utils"
@@ -25,63 +24,44 @@ const (
 )
 
 // Machine Abstract finite state machine.
-type Machine[E comparable] interface {
-	// Update synchronously calls current state update method
-	Update(ctx context.Context) error
-
+type Machine[E comparable, I comparable, S State[I]] interface {
 	// Event changes current machine state according to given event
 	Event(event E) error
 
 	// Result if machine on end state now - returns current state and true flag, nil and false otherwise
-	Result() (state State, ok bool)
+	Result() (state S, ok bool)
 
 	// IsRunning is machine on end state now
 	IsRunning() bool
 
 	// State returns current machine state
-	State() State
+	State() S
 }
 
-type StateIdentifier string
-
-type State interface {
-	Update(ctx context.Context) error
-	Identifier() StateIdentifier
+type State[I comparable] interface {
+	Identifier() I
 }
 
-type funcState struct {
-	identifier StateIdentifier
-	update     func(ctx context.Context) error
-}
+type Transitions[E comparable, I comparable] map[E]I
 
-func (f *funcState) Update(ctx context.Context) error {
-	return f.update(ctx)
-}
+type machine[E comparable, I comparable, S State[I]] struct {
+	transitions       map[I]Transitions[E, I]
+	globalTransitions Transitions[E, I]
 
-func (f *funcState) Identifier() StateIdentifier {
-	return f.identifier
-}
-
-type Transitions[E comparable] map[E]StateIdentifier
-
-type machine[E comparable] struct {
-	transitions       map[StateIdentifier]Transitions[E]
-	globalTransitions Transitions[E]
-
-	states       map[StateIdentifier]State
-	finalStates  utils.Set[StateIdentifier]
-	currentState State
+	states       map[I]S
+	finalStates  utils.Set[I]
+	currentState S
 	isRunning    bool
 }
 
-func newMachine[E comparable](builder *machineBuilder[E]) (Machine[E], error) {
+func newMachine[E comparable, I comparable, S State[I]](builder *machineBuilder[E, I, S]) (Machine[E, I, S], error) {
 	initialState, initialStateFound := builder.states[builder.initialState]
 
 	if !initialStateFound {
 		return nil, fmt.Errorf("initial state not set: %w", StateNotFoundError)
 	}
 
-	return &machine[E]{
+	return &machine[E, I, S]{
 		transitions:       maps.Clone(builder.transitions),
 		globalTransitions: maps.Clone(builder.globalTransitions),
 
@@ -92,45 +72,42 @@ func newMachine[E comparable](builder *machineBuilder[E]) (Machine[E], error) {
 	}, nil
 }
 
-func (m *machine[E]) Update(ctx context.Context) error {
-	return m.currentState.Update(ctx)
-}
-
-func (m *machine[E]) Event(event E) error {
+func (m *machine[E, I, S]) Event(event E) error {
 	currentState := m.currentState.Identifier()
 
 	if transitions, ok := m.transitions[currentState]; ok {
-		if nextStateIdentifier, ok := transitions[event]; ok {
-			return m.changeState(nextStateIdentifier)
+		if nextI, ok := transitions[event]; ok {
+			return m.changeState(nextI)
 		}
 	} else {
-		return fmt.Errorf("current state %s not found in transitions table: %w", currentState, StateNotFoundError)
+		return fmt.Errorf("current state not found in transitions table: %w", StateNotFoundError)
 	}
 
-	if nextStateIdentifier, ok := m.globalTransitions[event]; ok {
-		return m.changeState(nextStateIdentifier)
+	if nextI, ok := m.globalTransitions[event]; ok {
+		return m.changeState(nextI)
 	}
 
 	return UnknownEventError
 }
 
-func (m *machine[E]) Result() (state State, ok bool) {
+func (m *machine[E, I, S]) Result() (state S, ok bool) {
 	if !m.IsRunning() {
 		return m.currentState, true
-	} else {
-		return nil, false
 	}
+
+	var noop S
+	return noop, m.IsRunning()
 }
 
-func (m *machine[E]) IsRunning() bool {
+func (m *machine[E, I, S]) IsRunning() bool {
 	return m.isRunning
 }
 
-func (m *machine[E]) State() State {
+func (m *machine[E, I, S]) State() S {
 	return m.currentState
 }
 
-func (m *machine[E]) changeState(nextState StateIdentifier) error {
+func (m *machine[E, I, S]) changeState(nextState I) error {
 	if !m.isRunning {
 		return MachineNotRunningError
 	}
@@ -139,7 +116,7 @@ func (m *machine[E]) changeState(nextState StateIdentifier) error {
 		m.currentState = state
 		m.isRunning = !m.finalStates.Contains(state.Identifier())
 		return nil
-	} else {
-		return StateNotFoundError
 	}
+
+	return StateNotFoundError
 }
