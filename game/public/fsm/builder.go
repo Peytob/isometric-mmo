@@ -1,63 +1,60 @@
 package fsm
 
 import (
-	"context"
 	"errors"
 	"maps"
-	"peytob/isometricmmo/game/public/utils"
+
+	mapset "github.com/deckarep/golang-set/v2"
 )
 
-type MachineBuilder[E comparable] interface {
+type MachineBuilder[E comparable, I comparable, S State[I]] interface {
 	// RegisterState add State and all transitions to this Machine. If state already exists in
 	// machine, then transitions will be merged.
-	RegisterState(state State, transitions Transitions[E]) MachineBuilder[E]
-
-	// RegisterStateFunc alias for RegisterState that uses functions instead of state struct
-	RegisterStateFunc(f func(ctx context.Context) error, identifier StateIdentifier, transitions Transitions[E]) MachineBuilder[E]
+	RegisterState(state S, transitions Transitions[E, I]) MachineBuilder[E, I, S]
 
 	// WriteState registers state if state not exists. Rewrites transitions if state already exists.
-	WriteState(state State, transitions Transitions[E]) MachineBuilder[E]
+	WriteState(state S, transitions Transitions[E, I]) MachineBuilder[E, I, S]
 
 	// InitialState state that be used as initial on Machine. If initial state already exists it will be rewritten.
-	InitialState(state StateIdentifier) MachineBuilder[E]
+	InitialState(state I) MachineBuilder[E, I, S]
 
 	// GlobalTransitions Add new global transactions to Machine. If global transitions already specified, then
 	// new transitions will be rewritten
-	GlobalTransitions(transitions Transitions[E]) MachineBuilder[E]
+	GlobalTransitions(transitions Transitions[E, I]) MachineBuilder[E, I, S]
 
 	// FinalStates states that be used as final on Machine. If not set, then machine will work indefinitely.
-	FinalStates(states []StateIdentifier) MachineBuilder[E]
+	FinalStates(states []I) MachineBuilder[E, I, S]
 
 	// Build returns built machine. Possible error causes is:
 	// State used in transition but not registered
 	// If initial state not set
 	// No one state is registered
-	Build() (Machine[E], error)
+	Build() (Machine[E, I, S], error)
 }
 
-type machineBuilder[E comparable] struct {
-	transitions             map[StateIdentifier]Transitions[E]
-	globalTransitions       Transitions[E]
-	states                  map[StateIdentifier]State
-	finalStates             utils.Set[StateIdentifier]
-	initialState            StateIdentifier
+type machineBuilder[E comparable, I comparable, S State[I]] struct {
+	transitions             map[I]Transitions[E, I]
+	globalTransitions       Transitions[E, I]
+	states                  map[I]S
+	finalStates             mapset.Set[I]
+	initialState            I
 	initialStateInitialized bool
 }
 
 // NewBuilder Creates new builder
-func NewBuilder[E comparable]() MachineBuilder[E] {
-	m := &machineBuilder[E]{
-		transitions:             make(map[StateIdentifier]Transitions[E]),
-		globalTransitions:       make(Transitions[E]),
-		states:                  make(map[StateIdentifier]State),
-		finalStates:             utils.NewSet[StateIdentifier](16),
+func NewBuilder[E comparable, I comparable, S State[I]]() MachineBuilder[E, I, S] {
+	m := &machineBuilder[E, I, S]{
+		transitions:             make(map[I]Transitions[E, I]),
+		globalTransitions:       make(Transitions[E, I]),
+		states:                  make(map[I]S),
+		finalStates:             mapset.NewThreadUnsafeSet[I](),
 		initialStateInitialized: false,
 	}
 
 	return m
 }
 
-func (m *machineBuilder[E]) RegisterState(state State, transitions Transitions[E]) MachineBuilder[E] {
+func (m *machineBuilder[E, I, S]) RegisterState(state S, transitions Transitions[E, I]) MachineBuilder[E, I, S] {
 	if existsTransitions, ok := m.transitions[state.Identifier()]; ok {
 		maps.Copy(existsTransitions, transitions)
 	} else {
@@ -67,31 +64,24 @@ func (m *machineBuilder[E]) RegisterState(state State, transitions Transitions[E
 	return m
 }
 
-func (m *machineBuilder[E]) RegisterStateFunc(f func(ctx context.Context) error, identifier StateIdentifier, transitions Transitions[E]) MachineBuilder[E] {
-	return m.RegisterState(&funcState{
-		identifier: identifier,
-		update:     f,
-	}, transitions)
-}
-
-func (m *machineBuilder[E]) WriteState(state State, transitions Transitions[E]) MachineBuilder[E] {
+func (m *machineBuilder[E, I, S]) WriteState(state S, transitions Transitions[E, I]) MachineBuilder[E, I, S] {
 	m.transitions[state.Identifier()] = transitions
 	m.states[state.Identifier()] = state
 	return m
 }
 
-func (m *machineBuilder[E]) InitialState(state StateIdentifier) MachineBuilder[E] {
+func (m *machineBuilder[E, I, S]) InitialState(state I) MachineBuilder[E, I, S] {
 	m.initialState = state
 	m.initialStateInitialized = true
 	return m
 }
 
-func (m *machineBuilder[E]) GlobalTransitions(transitions Transitions[E]) MachineBuilder[E] {
+func (m *machineBuilder[E, I, S]) GlobalTransitions(transitions Transitions[E, I]) MachineBuilder[E, I, S] {
 	maps.Copy(m.globalTransitions, transitions)
 	return m
 }
 
-func (m *machineBuilder[E]) FinalStates(states []StateIdentifier) MachineBuilder[E] {
+func (m *machineBuilder[E, I, S]) FinalStates(states []I) MachineBuilder[E, I, S] {
 	for _, state := range states {
 		if !m.finalStates.Contains(state) {
 			m.finalStates.Add(state)
@@ -101,17 +91,17 @@ func (m *machineBuilder[E]) FinalStates(states []StateIdentifier) MachineBuilder
 	return m
 }
 
-func (m *machineBuilder[E]) Build() (Machine[E], error) {
+func (m *machineBuilder[E, I, S]) Build() (Machine[E, I, S], error) {
 	for leftState := range m.transitions {
 		if !m.containsState(leftState) {
-			return nil, errors.New(string("transition left finalState not found: " + leftState))
+			return nil, errors.New("transition left finalState not found")
 		}
 
 		for event := range m.transitions[leftState] {
 			rightState := m.transitions[leftState][event]
 
 			if !m.containsState(rightState) {
-				return nil, errors.New(string("transition right finalState not found: " + leftState))
+				return nil, errors.New("transition right finalState not found")
 			}
 		}
 	}
@@ -120,13 +110,13 @@ func (m *machineBuilder[E]) Build() (Machine[E], error) {
 		rightState := m.globalTransitions[event]
 
 		if !m.containsState(rightState) {
-			return nil, errors.New(string("transition right finalState not found: " + rightState))
+			return nil, errors.New("transition right finalState not found")
 		}
 	}
 
-	for finalState := range m.finalStates {
+	for finalState := range m.finalStates.Iter() {
 		if !m.containsState(finalState) {
-			return nil, errors.New(string("final finalState not found: " + finalState))
+			return nil, errors.New("final finalState not found")
 		}
 	}
 
@@ -141,7 +131,7 @@ func (m *machineBuilder[E]) Build() (Machine[E], error) {
 	return newMachine(m)
 }
 
-func (m *machineBuilder[E]) containsState(identifier StateIdentifier) bool {
+func (m *machineBuilder[E, I, S]) containsState(identifier I) bool {
 	_, ok := m.states[identifier]
 	return ok
 }
