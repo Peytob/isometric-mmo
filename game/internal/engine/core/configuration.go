@@ -1,7 +1,6 @@
-package engine
+package core
 
 import (
-	"context"
 	"errors"
 	"fmt"
 
@@ -9,13 +8,9 @@ import (
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
-const (
-	JsonLoggerFormat = iota
-	TextLoggerFormat
-)
-
 type Configuration struct {
-	Log *LogConfiguration `yaml:"log" env-prefix:"LOG_"`
+	Log  *LogConfiguration  `yaml:"log" env-prefix:"LOG_" validate:"omitempty"`
+	Http *HttpConfiguration `yaml:"http" env-prefix:"HTTP_" validate:"omitempty"`
 }
 
 type LogConfiguration struct {
@@ -26,22 +21,16 @@ type LogConfiguration struct {
 	Handler int `yaml:"-" env:"-"`
 }
 
-func LoadClientConfiguration(ctx context.Context) (*Configuration, error) {
-	cfg, err := loadConfiguration(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed client configuration loading: %w", err)
-	}
-
-	cfg.Log.Handler = TextLoggerFormat
-
-	return cfg, nil
+type HttpConfiguration struct {
+	Port int    `yaml:"port" env:"PORT" validate:"required,min=1,max=65535"`
+	Host string `yaml:"host" env:"HOST" validate:"required"`
 }
 
-func loadConfiguration(_ context.Context) (*Configuration, error) {
+func LoadConfiguration(path string) (*Configuration, error) {
 	cfg := &Configuration{}
 
-	if err := cleanenv.ReadConfig("./config/config.yaml", cfg); err != nil {
-		return nil, fmt.Errorf("failed to load configuration from config.yaml and envs: %w", err)
+	if err := cleanenv.ReadConfig(path, cfg); err != nil {
+		return nil, fmt.Errorf("failed to load configuration %s from and envs: %w", path, err)
 	}
 
 	if err := validateConfiguration(cfg); err != nil {
