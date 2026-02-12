@@ -3,13 +3,14 @@ package network
 import (
 	"context"
 	"log/slog"
+	"net"
 	"net/http"
 	"peytob/isometricmmo/game/internal/engine/core"
 	"strconv"
 )
 
 type HttpServer interface {
-	ListenAndServe() error
+	ListenAndServe(ctx context.Context) error
 	Address() string
 	Shutdown(ctx context.Context) error
 }
@@ -18,34 +19,40 @@ type HttpServerOpts struct{}
 
 type httpServer struct {
 	server http.Server
+	root   http.Handler
 	logger *slog.Logger
+	addr   string
 }
 
-func InitializeHttpServer(ctx context.Context, configuration *core.Configuration, logger *slog.Logger) (HttpServer, error) {
+func InitializeHttpServer(configuration *core.Configuration, logger *slog.Logger, root http.Handler) (HttpServer, error) {
 	addr := configuration.Http.Host + ":" + strconv.Itoa(configuration.Http.Port)
 
 	return &httpServer{
-		server: http.Server{
-			Addr: addr,
-			Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				w.WriteHeader(http.StatusOK)
-				w.Write([]byte("Hello World"))
-			}),
-		},
 		logger: logger.With("address", addr),
+		addr:   addr,
+		root:   root,
 	}, nil
 }
 
-func (server *httpServer) ListenAndServe() error {
-	server.logger.Info("starting http server listening")
-	return server.server.ListenAndServe()
+func (s *httpServer) ListenAndServe(ctx context.Context) error {
+	s.logger.Info("starting http server listening")
+
+	s.server = http.Server{
+		Addr:    s.addr,
+		Handler: s.root,
+		BaseContext: func(listener net.Listener) context.Context {
+			return ctx
+		},
+	}
+
+	return s.server.ListenAndServe()
 }
 
-func (server *httpServer) Address() string {
-	return server.server.Addr
+func (s *httpServer) Address() string {
+	return s.addr
 }
 
-func (server *httpServer) Shutdown(ctx context.Context) error {
-	server.logger.Info("shutting down http server")
-	return server.server.Shutdown(ctx)
+func (s *httpServer) Shutdown(ctx context.Context) error {
+	s.logger.Info("shutting down http s")
+	return s.server.Shutdown(ctx)
 }

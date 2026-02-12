@@ -35,7 +35,7 @@ func main() {
 	errGroup, egContext := errgroup.WithContext(ctx)
 
 	errGroup.Go(func() error {
-		if err := server.Http().ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		if err := server.Http().ListenAndServe(ctx); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			return err
 		}
 

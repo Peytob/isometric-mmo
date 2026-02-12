@@ -24,23 +24,32 @@ type server struct {
 func InitializeServer(ctx context.Context, configuration *core.Configuration, logger *slog.Logger) (Server, error) {
 	var err error
 
-	logger.Info("Initializing server")
+	logger.Info("initializing server")
 
 	initializingServer := &server{}
 	initializingServer.configuration = configuration
 	initializingServer.logger = logger
 	initializingServer.storage = resource.NewServerStorage()
 
-	initializingServer.httpServer, err = network.InitializeHttpServer(ctx, configuration, logger)
+	api := network.InitializeWebApi(initializingServer)
+	initializingServer.httpServer, err = network.InitializeHttpServer(configuration, logger, api.RootRouter())
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize HTTP server: %w", err)
 	}
 
-	logger.Info("Server initialized")
+	logger.Info("server initialized")
 
 	return initializingServer, nil
 }
 
 func (server *server) Http() network.HttpServer {
 	return server.httpServer
+}
+
+func (server *server) Storage() resource.Storage {
+	return server.storage
+}
+
+func (server *server) Logger() *slog.Logger {
+	return server.logger
 }
