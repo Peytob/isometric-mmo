@@ -1,4 +1,4 @@
-package network
+package api
 
 import (
 	"github.com/go-chi/chi/v5"
@@ -7,15 +7,14 @@ import (
 )
 
 type Api struct {
-	rootRouter *chi.Mux
+	rootRouter chi.Router
 }
 
 func InitializeWebApi(app core.App) Api {
-	root := chi.NewRouter()
+	root := chi.NewRouter().
+		With() // TODO Middleware
 
-	root.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("pong"))
-	})
+	root.Mount("/system", initializeSystemApi(app))
 
 	return Api{
 		rootRouter: root,
