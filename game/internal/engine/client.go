@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"peytob/isometricmmo/game/internal/engine/core"
 	"peytob/isometricmmo/game/internal/engine/engine_machine"
 	"peytob/isometricmmo/game/internal/resource"
 	"peytob/isometricmmo/game/public/fsm"
@@ -14,13 +15,13 @@ type Client interface {
 }
 
 type client struct {
-	configuration *Configuration
+	configuration *core.Configuration
 	gameMachine   engine_machine.Machine
 	logger        *slog.Logger
 	storage       resource.Storage
 }
 
-func StartClient(_ context.Context, configuration *Configuration, logger *slog.Logger) (Client, error) {
+func StartClient(_ context.Context, configuration *core.Configuration, logger *slog.Logger) (Client, error) {
 	var err error
 
 	initializingClient := &client{}

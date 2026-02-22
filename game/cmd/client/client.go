@@ -2,8 +2,12 @@ package main
 
 import (
 	"context"
+	"os"
+	"os/signal"
 	"peytob/isometricmmo/game/internal/engine"
+	"peytob/isometricmmo/game/internal/engine/core"
 	"runtime"
+	"syscall"
 )
 
 func main() {
@@ -11,13 +15,15 @@ func main() {
 	// to C libraries restrictions
 	runtime.LockOSThread()
 
-	ctx := context.Background()
-	cfg, err := engine.LoadClientConfiguration(ctx)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	cfg, err := core.LoadConfiguration("./config/client_config.yaml")
 	if err != nil {
 		panic(err)
 	}
 
-	logger, err := engine.LoadLogger(ctx, cfg)
+	logger, err := engine.LoadClientLogger(ctx, cfg)
 	if err != nil {
 		panic(err)
 	}
