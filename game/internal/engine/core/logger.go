@@ -1,4 +1,4 @@
-package engine
+package core
 
 import (
 	"context"
@@ -6,10 +6,9 @@ import (
 	"io"
 	"log/slog"
 	"os"
-	"peytob/isometricmmo/game/internal/engine/core"
 )
 
-func LoadClientLogger(_ context.Context, cfg *core.Configuration) (*slog.Logger, error) {
+func LoadClientLogger(_ context.Context, cfg *Configuration) (*slog.Logger, error) {
 	if !cfg.Log.Enabled {
 		return slog.New(slog.NewTextHandler(io.Discard, nil)), nil
 	}
@@ -26,7 +25,7 @@ func LoadClientLogger(_ context.Context, cfg *core.Configuration) (*slog.Logger,
 	return slog.New(handler), nil
 }
 
-func LoadServerLogger(_ context.Context, cfg *core.Configuration) (*slog.Logger, error) {
+func LoadServerLogger(_ context.Context, cfg *Configuration) (*slog.Logger, error) {
 	if !cfg.Log.Enabled {
 		return slog.New(slog.NewTextHandler(io.Discard, nil)), nil
 	}

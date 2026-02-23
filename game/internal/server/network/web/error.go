@@ -1,11 +1,11 @@
-package network
+package web
 
-type WebError struct {
+type Error struct {
 	Message    string
 	StatusCode int
 	Details    string
 }
 
-func (w WebError) Error() string {
+func (w Error) Error() string {
 	return w.Details
 }

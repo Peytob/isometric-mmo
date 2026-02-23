@@ -1,17 +1,19 @@
-package engine
+package server
 
 import (
 	"context"
 	"fmt"
 	log "log/slog"
 	"peytob/isometricmmo/game/internal/engine/core"
-	"peytob/isometricmmo/game/internal/engine/network"
-	"peytob/isometricmmo/game/internal/engine/network/api"
-	"peytob/isometricmmo/game/internal/resource"
+	"peytob/isometricmmo/game/internal/engine/management/resource"
+	"peytob/isometricmmo/game/internal/server/network/web"
+	"peytob/isometricmmo/game/internal/server/network/web/api"
 )
 
 type Server interface {
-	Http() network.HttpServer
+	core.App
+
+	Http() web.HttpServer
 }
 
 type server struct {
@@ -21,7 +23,7 @@ type server struct {
 	logger        *log.Logger
 	storage       resource.Storage
 
-	httpServer network.HttpServer
+	httpServer web.HttpServer
 }
 
 func InitializeServer(ctx context.Context, configuration *core.Configuration, logger *log.Logger) (Server, error) {
@@ -38,7 +40,7 @@ func InitializeServer(ctx context.Context, configuration *core.Configuration, lo
 	initializingServer.storage = resource.NewServerStorage()
 
 	webApi := api.InitializeWebApi(initializingServer)
-	initializingServer.httpServer, err = network.InitializeHttpServer(initializingServer, webApi.RootRouter())
+	initializingServer.httpServer, err = web.InitializeHttpServer(initializingServer, webApi.RootRouter())
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize HTTP server: %w", err)
 	}
@@ -48,7 +50,7 @@ func InitializeServer(ctx context.Context, configuration *core.Configuration, lo
 	return initializingServer, nil
 }
 
-func (server *server) Http() network.HttpServer {
+func (server *server) Http() web.HttpServer {
 	return server.httpServer
 }
 

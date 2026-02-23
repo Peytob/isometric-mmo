@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"peytob/isometricmmo/game/internal/engine"
 	"peytob/isometricmmo/game/internal/engine/core"
+	"peytob/isometricmmo/game/internal/server"
 	"syscall"
 
 	"golang.org/x/sync/errgroup"
@@ -22,12 +22,12 @@ func main() {
 		panic(err)
 	}
 
-	logger, err := engine.LoadServerLogger(ctx, cfg)
+	logger, err := core.LoadServerLogger(ctx, cfg)
 	if err != nil {
 		panic(err)
 	}
 
-	server, err := engine.InitializeServer(ctx, cfg, logger)
+	app, err := server.InitializeServer(ctx, cfg, logger)
 	if err != nil {
 		panic(err)
 	}
@@ -35,7 +35,7 @@ func main() {
 	errGroup, egContext := errgroup.WithContext(ctx)
 
 	errGroup.Go(func() error {
-		if err := server.Http().ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		if err := app.Http().ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			return err
 		}
 
@@ -44,7 +44,7 @@ func main() {
 
 	errGroup.Go(func() error {
 		<-egContext.Done()
-		return server.Http().Shutdown()
+		return app.Http().Shutdown()
 	})
 
 	if err := errGroup.Wait(); err != nil {

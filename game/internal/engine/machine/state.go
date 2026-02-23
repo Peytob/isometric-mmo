@@ -1,4 +1,4 @@
-package engine_machine
+package machine
 
 import (
 	"context"

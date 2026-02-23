@@ -2,11 +2,12 @@ package api
 
 import (
 	"encoding/json"
-	"github.com/go-chi/chi/v5"
 	"net/http"
 	"peytob/isometricmmo/game/internal/engine/core"
-	"peytob/isometricmmo/game/internal/engine/logic"
-	"peytob/isometricmmo/game/internal/engine/network"
+	"peytob/isometricmmo/game/internal/server/management/status"
+	"peytob/isometricmmo/game/internal/server/network/web"
+
+	"github.com/go-chi/chi/v5"
 )
 
 func initializeSystemApi(app core.App) chi.Router {
@@ -17,8 +18,8 @@ func initializeSystemApi(app core.App) chi.Router {
 	return systemRouter
 }
 
-func pingHandler(ctx network.WebContext, w http.ResponseWriter, r *http.Request) {
-	res := logic.PingServer(ctx.AppContext())
+func pingHandler(ctx web.Context, w http.ResponseWriter, r *http.Request) {
+	res := status.GetServerStatus(ctx.AppContext())
 
 	if err := json.NewEncoder(w).Encode(res); err != nil {
 		ctx.Logger().Error("failed to write response")
