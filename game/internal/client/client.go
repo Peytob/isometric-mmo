@@ -1,22 +1,24 @@
-package engine
+package client
 
 import (
 	"context"
 	"fmt"
 	"log/slog"
 	"peytob/isometricmmo/game/internal/engine/core"
-	"peytob/isometricmmo/game/internal/engine/engine_machine"
-	"peytob/isometricmmo/game/internal/resource"
+	"peytob/isometricmmo/game/internal/engine/machine"
+	"peytob/isometricmmo/game/internal/engine/management/resource"
 	"peytob/isometricmmo/game/public/fsm"
 )
 
 type Client interface {
+	// TODO Add implementation for core.App
+
 	Run(ctx context.Context) error
 }
 
 type client struct {
 	configuration *core.Configuration
-	gameMachine   engine_machine.Machine
+	gameMachine   machine.Machine
 	logger        *slog.Logger
 	storage       resource.Storage
 }
@@ -43,7 +45,7 @@ func (c *client) Run(ctx context.Context) error {
 		return fmt.Errorf("error while executing FSM machine update: %w", err)
 	}
 
-	if event == engine_machine.NoEvent {
+	if event == machine.NoEvent {
 		return nil
 	}
 
@@ -55,9 +57,9 @@ func (c *client) Run(ctx context.Context) error {
 	return nil
 }
 
-func initializeClientMachine() (engine_machine.Machine, error) {
-	return fsm.NewBuilder[engine_machine.Event, engine_machine.StateIdentifier, engine_machine.State]().
-		RegisterState(engine_machine.NewInitialState(), make(fsm.Transitions[engine_machine.Event, engine_machine.StateIdentifier])).
-		InitialState(engine_machine.InitialStateIdentifier).
+func initializeClientMachine() (machine.Machine, error) {
+	return fsm.NewBuilder[machine.Event, machine.StateIdentifier, machine.State]().
+		RegisterState(machine.NewInitialState(), make(fsm.Transitions[machine.Event, machine.StateIdentifier])).
+		InitialState(machine.InitialStateIdentifier).
 		Build()
 }

@@ -4,7 +4,7 @@ import (
 	"context"
 	"os"
 	"os/signal"
-	"peytob/isometricmmo/game/internal/engine"
+	"peytob/isometricmmo/game/internal/client"
 	"peytob/isometricmmo/game/internal/engine/core"
 	"runtime"
 	"syscall"
@@ -23,17 +23,17 @@ func main() {
 		panic(err)
 	}
 
-	logger, err := engine.LoadClientLogger(ctx, cfg)
+	logger, err := core.LoadClientLogger(ctx, cfg)
 	if err != nil {
 		panic(err)
 	}
 
-	client, err := engine.StartClient(ctx, cfg, logger)
+	app, err := client.StartClient(ctx, cfg, logger)
 	if err != nil {
 		panic(err)
 	}
 
-	err = client.Run(ctx)
+	err = app.Run(ctx)
 	if err != nil {
 		panic(err)
 	}

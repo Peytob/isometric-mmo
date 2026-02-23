@@ -1,9 +1,10 @@
 package api
 
 import (
-	"github.com/go-chi/chi/v5"
 	"net/http"
 	"peytob/isometricmmo/game/internal/engine/core"
+
+	"github.com/go-chi/chi/v5"
 )
 
 type Api struct {

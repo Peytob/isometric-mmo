@@ -3,7 +3,7 @@ package core
 import (
 	"context"
 	log "log/slog"
-	"peytob/isometricmmo/game/internal/resource"
+	"peytob/isometricmmo/game/internal/engine/management/resource"
 )
 
 type App interface {
