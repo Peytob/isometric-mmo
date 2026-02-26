@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"peytob/isometricmmo/game/internal/client/graphic"
 	"peytob/isometricmmo/game/internal/engine/core"
 	"peytob/isometricmmo/game/internal/engine/machine"
 	"peytob/isometricmmo/game/internal/engine/management/resource"
@@ -14,6 +15,7 @@ type Client interface {
 	// TODO Add implementation for core.App
 
 	Run(ctx context.Context) error
+	Shutdown(ctx context.Context) error
 }
 
 type client struct {
@@ -21,6 +23,7 @@ type client struct {
 	gameMachine   machine.Machine
 	logger        *slog.Logger
 	storage       resource.Storage
+	graphic       graphic.Graphic
 }
 
 func StartClient(_ context.Context, configuration *core.Configuration, logger *slog.Logger) (Client, error) {
@@ -30,10 +33,10 @@ func StartClient(_ context.Context, configuration *core.Configuration, logger *s
 	initializingClient.configuration = configuration
 	initializingClient.logger = logger
 	initializingClient.storage = resource.NewClientStorage()
+	initializingClient.gameMachine = initializeClientMachine()
 
-	initializingClient.gameMachine, err = initializeClientMachine()
-	if err != nil {
-		return nil, fmt.Errorf("error while initializing client machine: %w", err)
+	if initializingClient.graphic, err = graphic.InitGraphic(); err != nil {
+		return nil, fmt.Errorf("error while initializing graphic: %v", err)
 	}
 
 	return initializingClient, nil
@@ -57,9 +60,15 @@ func (c *client) Run(ctx context.Context) error {
 	return nil
 }
 
-func initializeClientMachine() (machine.Machine, error) {
+func (c *client) Shutdown(_ context.Context) error {
+	c.logger.Info("shutting down client")
+	c.graphic.Terminate()
+	return nil
+}
+
+func initializeClientMachine() machine.Machine {
 	return fsm.NewBuilder[machine.Event, machine.StateIdentifier, machine.State]().
 		RegisterState(machine.NewInitialState(), make(fsm.Transitions[machine.Event, machine.StateIdentifier])).
 		InitialState(machine.InitialStateIdentifier).
-		Build()
+		ShouldBuild()
 }
