@@ -21,7 +21,7 @@ type Client interface {
 
 type client struct {
 	logger        *slog.Logger
-	configuration *core.Configuration
+	configuration *core.ClientConfiguration
 	gameMachine   machine.Machine
 
 	storage resource.Storage
@@ -29,7 +29,7 @@ type client struct {
 	window  window.Window
 }
 
-func StartClient(_ context.Context, configuration *core.Configuration, logger *slog.Logger) (Client, error) {
+func StartClient(_ context.Context, configuration *core.ClientConfiguration, logger *slog.Logger) (Client, error) {
 	var err error
 
 	initializingClient := &client{}
@@ -38,7 +38,7 @@ func StartClient(_ context.Context, configuration *core.Configuration, logger *s
 	initializingClient.storage = resource.NewClientStorage()
 	initializingClient.gameMachine = initializeClientMachine()
 
-	if initializingClient.window, err = window.Init(); err != nil {
+	if initializingClient.window, err = window.Init(configuration.Window); err != nil {
 		return nil, fmt.Errorf("error while initializing graphic: %v", err)
 	}
 

@@ -19,14 +19,14 @@ type Server interface {
 type server struct {
 	rootContext context.Context
 
-	configuration *core.Configuration
+	configuration *core.ServerConfiguration
 	logger        *log.Logger
 	storage       resource.Storage
 
 	httpServer web.HttpServer
 }
 
-func InitializeServer(ctx context.Context, configuration *core.Configuration, logger *log.Logger) (Server, error) {
+func InitializeServer(ctx context.Context, configuration *core.ServerConfiguration, logger *log.Logger) (Server, error) {
 	var err error
 
 	logger.Info("initializing server")
@@ -40,7 +40,7 @@ func InitializeServer(ctx context.Context, configuration *core.Configuration, lo
 	initializingServer.storage = resource.NewServerStorage()
 
 	webApi := api.InitializeWebApi(initializingServer)
-	initializingServer.httpServer, err = web.InitializeHttpServer(initializingServer, webApi.RootRouter())
+	initializingServer.httpServer, err = web.InitializeHttpServer(initializingServer, initializingServer.configuration.Http, webApi.RootRouter())
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize HTTP server: %w", err)
 	}
@@ -56,10 +56,6 @@ func (server *server) Http() web.HttpServer {
 
 func (server *server) Storage() resource.Storage {
 	return server.storage
-}
-
-func (server *server) Configuration() *core.Configuration {
-	return server.configuration
 }
 
 func (server *server) Logger() *log.Logger {

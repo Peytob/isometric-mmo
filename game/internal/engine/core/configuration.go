@@ -3,22 +3,25 @@ package core
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
-type Configuration struct {
+type ClientConfiguration struct {
+	Log    *LogConfiguration    `yaml:"log" env-prefix:"LOG_" validate:"omitempty"`
+	Window *WindowConfiguration `yaml:"window" env-prefix:"WINDOW_" validate:"omitempty"`
+}
+
+type ServerConfiguration struct {
 	Log  *LogConfiguration  `yaml:"log" env-prefix:"LOG_" validate:"omitempty"`
 	Http *HttpConfiguration `yaml:"http" env-prefix:"HTTP_" validate:"omitempty"`
 }
 
 type LogConfiguration struct {
-	Enabled bool   `yaml:"enabled" env:"ENABLED"`
-	Level   string `yaml:"level" env:"LEVEL" validate:"required,oneof=debug info warn error"`
-
-	// Logging format. Used for client and server logging format separation.
-	Handler int `yaml:"-" env:"-"`
+	Enabled bool       `yaml:"enabled" env:"ENABLED"`
+	Level   slog.Level `yaml:"level" env:"LEVEL"`
 }
 
 type HttpConfiguration struct {
@@ -26,8 +29,13 @@ type HttpConfiguration struct {
 	Host string `yaml:"host" env:"HOST" validate:"required"`
 }
 
-func LoadConfiguration(path string) (*Configuration, error) {
-	cfg := &Configuration{}
+type WindowConfiguration struct {
+	Width  int `yaml:"width" env:"WIDTH" validate:"required,min=320,max=7680"`
+	Height int `yaml:"height" env:"HEIGHT" validate:"required,min=240,max=4800"`
+}
+
+func LoadConfiguration[T ClientConfiguration | ServerConfiguration](path string) (*T, error) {
+	cfg := new(T)
 
 	if err := cleanenv.ReadConfig(path, cfg); err != nil {
 		return nil, fmt.Errorf("failed to load configuration %s from and envs: %w", path, err)
@@ -40,7 +48,7 @@ func LoadConfiguration(path string) (*Configuration, error) {
 	return cfg, nil
 }
 
-func validateConfiguration(cfg *Configuration) error {
+func validateConfiguration[T ClientConfiguration | ServerConfiguration](cfg *T) error {
 	validate := validator.New()
 
 	err := validate.Struct(cfg)

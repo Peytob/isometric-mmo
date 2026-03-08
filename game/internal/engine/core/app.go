@@ -9,7 +9,6 @@ import (
 type App interface {
 	Storage() resource.Storage
 	Logger() *log.Logger
-	Configuration() *Configuration
 
 	NewContextFrom(parent context.Context) AppContext
 	NewContext() AppContext

@@ -20,12 +20,12 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	cfg, err := core.LoadConfiguration("./config/client_config.yaml")
+	cfg, err := core.LoadConfiguration[core.ClientConfiguration]("./config/client_config.yaml")
 	if err != nil {
 		panic(err)
 	}
 
-	logger, err := core.LoadClientLogger(ctx, cfg)
+	logger, err := core.LoadClientLogger(ctx, cfg.Log)
 	if err != nil {
 		panic("failed to initialize logger:" + err.Error())
 	}
