@@ -17,12 +17,12 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	cfg, err := core.LoadConfiguration("./config/server_config.yaml")
+	cfg, err := core.LoadConfiguration[core.ServerConfiguration]("./config/server_config.yaml")
 	if err != nil {
 		panic(err)
 	}
 
-	logger, err := core.LoadServerLogger(ctx, cfg)
+	logger, err := core.LoadServerLogger(ctx, cfg.Log)
 	if err != nil {
 		panic(err)
 	}

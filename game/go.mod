@@ -5,6 +5,7 @@ go 1.25.1
 require (
 	github.com/deckarep/golang-set/v2 v2.8.0
 	github.com/go-chi/chi/v5 v5.2.5
+	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20250301202403-da16c1255728
 	github.com/go-playground/validator/v10 v10.30.1
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	golang.org/x/sync v0.19.0

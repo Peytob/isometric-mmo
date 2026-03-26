@@ -25,9 +25,8 @@ type httpServer struct {
 	baseContext context.Context
 }
 
-func InitializeHttpServer(app core.App, root http.Handler) (HttpServer, error) {
-	cfg := app.Configuration()
-	addr := cfg.Http.Host + ":" + strconv.Itoa(cfg.Http.Port)
+func InitializeHttpServer(app core.App, cfg *core.HttpConfiguration, root http.Handler) (HttpServer, error) {
+	addr := cfg.Host + ":" + strconv.Itoa(cfg.Port)
 
 	return &httpServer{
 		logger:      app.Logger().With("address", addr),
