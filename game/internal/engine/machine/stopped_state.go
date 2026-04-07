@@ -2,6 +2,7 @@ package machine
 
 import (
 	"context"
+	"peytob/isometricmmo/game/internal/engine/core"
 )
 
 const StoppedStateIdentifier = StateIdentifier("stopped")
@@ -9,7 +10,7 @@ const StoppedStateIdentifier = StateIdentifier("stopped")
 type StoppedState struct {
 }
 
-func NewStoppedState() State {
+func NewStoppedState(_ core.App) State {
 	return &StoppedState{}
 }
 

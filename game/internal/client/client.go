@@ -23,20 +23,21 @@ type client struct {
 	logger        *slog.Logger
 	configuration *core.ClientConfiguration
 	gameMachine   machine.Machine
+	rootCtx       context.Context
 
 	storage resource.Storage
 	graphic graphic.Graphic
 	window  window.Window
 }
 
-func StartClient(_ context.Context, configuration *core.ClientConfiguration, logger *slog.Logger) (Client, error) {
+func StartClient(rootCtx context.Context, configuration *core.ClientConfiguration, logger *slog.Logger) (Client, error) {
 	var err error
 
 	initializingClient := &client{}
 	initializingClient.configuration = configuration
 	initializingClient.logger = logger
+	initializingClient.rootCtx = rootCtx
 	initializingClient.storage = resource.NewClientStorage()
-	initializingClient.gameMachine = initializeClientMachine()
 
 	if initializingClient.window, err = window.Init(configuration.Window); err != nil {
 		return nil, fmt.Errorf("error while initializing graphic: %v", err)
@@ -45,6 +46,8 @@ func StartClient(_ context.Context, configuration *core.ClientConfiguration, log
 	if initializingClient.graphic, err = graphic.Init(initializingClient.window); err != nil {
 		return nil, fmt.Errorf("error while initializing graphic: %v", err)
 	}
+
+	initializingClient.gameMachine = initializeClientMachine(initializingClient)
 
 	initializingClient.setUpWindowCallbacks()
 
@@ -80,6 +83,8 @@ func (c *client) Run(ctx context.Context) error {
 			return fmt.Errorf("error while executing FSM machine update: %w", err)
 		}
 
+		c.window.SwapBuffers()
+
 		if event != machine.NoEvent {
 			err = c.gameMachine.Event(event)
 			if err != nil {
@@ -108,11 +113,31 @@ func (c *client) setUpWindowCallbacks() {
 	})
 }
 
-func initializeClientMachine() machine.Machine {
+func (c *client) Storage() resource.Storage {
+	return c.storage
+}
+
+func (c *client) Logger() *slog.Logger {
+	return c.logger
+}
+
+func (c *client) NewContextFrom(parent context.Context) core.AppContext {
+	if appContext, ok := parent.(core.AppContext); ok {
+		return appContext
+	}
+
+	return core.NewAppContext(parent, c)
+}
+
+func (c *client) NewContext() core.AppContext {
+	return c.NewContextFrom(c.rootCtx)
+}
+
+func initializeClientMachine(app core.App) machine.Machine {
 	return fsm.NewBuilder[machine.Event, machine.StateIdentifier, machine.State]().
-		RegisterState(machine.NewInitialState(), make(fsm.Transitions[machine.Event, machine.StateIdentifier])).
+		RegisterState(machine.NewInitialState(app), make(fsm.Transitions[machine.Event, machine.StateIdentifier])).
 		InitialState(machine.InitialStateIdentifier).
-		RegisterState(machine.NewStoppedState(), make(fsm.Transitions[machine.Event, machine.StateIdentifier])).
+		RegisterState(machine.NewStoppedState(app), make(fsm.Transitions[machine.Event, machine.StateIdentifier])).
 		GlobalTransitions(fsm.Transitions[machine.Event, machine.StateIdentifier]{
 			machine.StoppedEvent: machine.InitialStateIdentifier,
 		}).

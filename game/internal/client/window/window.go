@@ -56,3 +56,7 @@ func (w Window) OnClose(callback func(Window)) {
 		callback(w)
 	})
 }
+
+func (w Window) SwapBuffers() {
+	w.window.SwapBuffers()
+}

@@ -39,4 +39,9 @@ func main() {
 	if err != nil {
 		panic("unhandled error while running: " + err.Error())
 	}
+
+	err = app.Shutdown(ctx)
+	if err != nil {
+		panic("failed to shutdown client: " + err.Error())
+	}
 }

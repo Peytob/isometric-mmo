@@ -50,26 +50,26 @@ func InitializeServer(ctx context.Context, configuration *core.ServerConfigurati
 	return initializingServer, nil
 }
 
-func (server *server) Http() web.HttpServer {
-	return server.httpServer
+func (s *server) Http() web.HttpServer {
+	return s.httpServer
 }
 
-func (server *server) Storage() resource.Storage {
-	return server.storage
+func (s *server) Storage() resource.Storage {
+	return s.storage
 }
 
-func (server *server) Logger() *log.Logger {
-	return server.logger
+func (s *server) Logger() *log.Logger {
+	return s.logger
 }
 
-func (server *server) NewContextFrom(parent context.Context) core.AppContext {
+func (s *server) NewContextFrom(parent context.Context) core.AppContext {
 	if appContext, ok := parent.(core.AppContext); ok {
 		return appContext
 	}
 
-	return core.NewAppContext(parent, server)
+	return core.NewAppContext(parent, s)
 }
 
-func (server *server) NewContext() core.AppContext {
-	return server.NewContextFrom(server.rootContext)
+func (s *server) NewContext() core.AppContext {
+	return s.NewContextFrom(s.rootContext)
 }

@@ -2,6 +2,7 @@ package machine
 
 import (
 	"context"
+	"peytob/isometricmmo/game/internal/engine/core"
 )
 
 const InitialStateIdentifier = StateIdentifier("initial")
@@ -9,7 +10,7 @@ const InitialStateIdentifier = StateIdentifier("initial")
 type InitialState struct {
 }
 
-func NewInitialState() State {
+func NewInitialState(_ core.App) State {
 	return &InitialState{}
 }
 
