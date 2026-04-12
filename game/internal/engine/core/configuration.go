@@ -20,7 +20,7 @@ type ServerConfiguration struct {
 }
 
 type LogConfiguration struct {
-	Enabled bool       `yaml:"enabled" env:"ENABLED"`
+	Enabled bool       `yaml:"enabled" env:"ENABLED" envDefault:`
 	Level   slog.Level `yaml:"level" env:"LEVEL"`
 }
 
