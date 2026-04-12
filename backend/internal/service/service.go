@@ -1,10 +1,20 @@
 package service
 
-import "peytob/isometricmmo/backend/internal/store"
+import (
+	"log/slog"
+	"peytob/isometricmmo/backend/config"
+	"peytob/isometricmmo/backend/internal/store"
+)
 
 type Service struct {
 }
 
-func Initialize(_ store.Store) (Service, error) {
+type initializer interface {
+	Config() config.Config
+	Logger() *slog.Logger
+	Store() store.Store
+}
+
+func Initialize(i initializer) (Service, error) {
 	return Service{}, nil
 }

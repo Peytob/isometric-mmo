@@ -16,11 +16,11 @@ type ClientConfiguration struct {
 
 type ServerConfiguration struct {
 	Log  *LogConfiguration  `yaml:"log" env-prefix:"LOG_" validate:"omitempty"`
-	Http *HttpConfiguration `yaml:"http" env-prefix:"HTTP_" validate:"omitempty"`
+	Http *HttpConfiguration `yaml:"thttp" env-prefix:"HTTP_" validate:"omitempty"`
 }
 
 type LogConfiguration struct {
-	Enabled bool       `yaml:"enabled" env:"ENABLED" envDefault:`
+	Enabled bool       `yaml:"enabled" env:"ENABLED"`
 	Level   slog.Level `yaml:"level" env:"LEVEL"`
 }
 

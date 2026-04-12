@@ -1,8 +1,23 @@
 package store
 
+import (
+	"log/slog"
+	"peytob/isometricmmo/backend/config"
+)
+
 type Store struct {
+	logger *slog.Logger
 }
 
-func Initialize() (Store, error) {
-	return Store{}, nil
+type initializer interface {
+	Config() config.Config
+	Logger() *slog.Logger
+}
+
+func Initialize(i initializer) (Store, error) {
+	i.Logger().Debug("Initializing store")
+
+	s := Store{}
+
+	return s, nil
 }
